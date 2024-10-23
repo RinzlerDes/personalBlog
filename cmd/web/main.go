@@ -17,6 +17,8 @@ func main() {
 	mux.HandleFunc("/", homeHandler)
 	mux.HandleFunc("/posts/view", viewHandler)
 	mux.HandleFunc("/posts/create", createHandler)
+	// mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
+	// Does the same thing
 	mux.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
 		fileServerHandler(w, r, fileServer)
 	})
