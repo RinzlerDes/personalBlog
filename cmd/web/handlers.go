@@ -56,3 +56,16 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write([]byte("Creating post"))
 }
+
+func fileServerHandler(w http.ResponseWriter, r *http.Request, h http.Handler) {
+
+	orig := r.URL.Path
+	strippedPath := r.URL.Path[len("/static/"):] // Get the path after stripping
+	log.Printf("Before: %s\nFile path after StripPrefix: %s", orig, strippedPath)
+
+	// Adjust the request URL path to match the file server's expectation
+	r.URL.Path = strippedPath // Set the adjusted path for the file server
+
+	// Serve the file using the adjusted request
+	h.ServeHTTP(w, r)
+}
