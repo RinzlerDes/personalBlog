@@ -1,0 +1,3 @@
+To get rid of directory listings for file server the dirty way.
+create blank index.html files in each dir.
+find ./ui/static -type d -exec touch {}/index.html \;
