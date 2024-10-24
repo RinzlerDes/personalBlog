@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 )
 
 type CommandLineFlags struct {
@@ -12,6 +13,9 @@ type CommandLineFlags struct {
 }
 
 func main() {
+	logErr := log.New(os.Stderr, "ERRORR:", log.Lshortfile|log.Ltime|log.Ldate)
+	logInfo := log.New(os.Stdout, "INFOO:", log.Lshortfile|log.Ltime|log.Ldate)
+
 	var commandLineFlags CommandLineFlags
 	commandLineFlags.getCommandLineFlags()
 
@@ -27,13 +31,12 @@ func main() {
 		fileServerHandler(w, r, fileServer)
 	})
 
-	log.Printf("Starting server on %s", commandLineFlags.addr)
-	log.Fatal(http.ListenAndServe(commandLineFlags.addr, mux))
+	logInfo.Printf("Starting server on %s", commandLineFlags.addr)
+	logErr.Fatal(http.ListenAndServe(commandLineFlags.addr, mux))
 }
 
 func (flags *CommandLineFlags) getCommandLineFlags() {
-	addr := flag.String("addr", "localhost:8080", "HTTP network address")
-
+	flag.StringVar(&flags.addr, "addr", "localhost:8080", "HTTP network address")
+	flag.StringVar(&flags.fileServerAddr, "fileServerAddr", "./ui/static", "Path to static assets")
 	flag.Parse()
-	flags.addr = *addr
 }
