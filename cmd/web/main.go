@@ -1,10 +1,14 @@
 package main
 
 import (
-	"flag"
+	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type CommandLineFlags struct {
@@ -12,31 +16,45 @@ type CommandLineFlags struct {
 	fileServerAddr string
 }
 
-func main() {
-	logErr := log.New(os.Stderr, "ERRORR:", log.Lshortfile|log.Ltime|log.Ldate)
-	logInfo := log.New(os.Stdout, "INFOO:", log.Lshortfile|log.Ltime|log.Ldate)
-
-	var commandLineFlags CommandLineFlags
-	commandLineFlags.getCommandLineFlags()
-
-	mux := http.NewServeMux()
-	fileServer := http.FileServer(http.Dir(commandLineFlags.fileServerAddr))
-
-	mux.HandleFunc("/", homeHandler)
-	mux.HandleFunc("/posts/view", viewHandler)
-	mux.HandleFunc("/posts/create", createHandler)
-	// mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
-	// Does the same thing
-	mux.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
-		fileServerHandler(w, r, fileServer)
-	})
-
-	logInfo.Printf("Starting server on %s", commandLineFlags.addr)
-	logErr.Fatal(http.ListenAndServe(commandLineFlags.addr, mux))
+type Application struct {
+	logErr  *log.Logger
+	logInfo *log.Logger
+	flags   *CommandLineFlags
 }
 
-func (flags *CommandLineFlags) getCommandLineFlags() {
-	flag.StringVar(&flags.addr, "addr", "localhost:8080", "HTTP network address")
-	flag.StringVar(&flags.fileServerAddr, "fileServerAddr", "./ui/static", "Path to static assets")
-	flag.Parse()
+func main() {
+	app := &Application{
+		logErr:  log.New(os.Stderr, "ERRORR\t", log.Lshortfile|log.Ltime|log.Ldate),
+		logInfo: log.New(os.Stdout, "INFOO\t", log.Lshortfile|log.Ltime|log.Ldate),
+		flags:   &CommandLineFlags{},
+	}
+	app.flags.getCommandLineFlags()
+
+	server := &http.Server{
+		Addr:     app.flags.addr,
+		Handler:  app.routes(),
+		ErrorLog: app.logErr,
+	}
+
+	db, err := pgx.Connect(context.Background(), "postgres://rinzler@/personalBlog")
+	if err != nil {
+		app.logErr.Fatalf("Unable to connect to database: %v\n", err)
+	}
+	defer db.Close(context.Background())
+
+	var id string
+	var title string
+	var content string
+	var timestamp time.Time
+
+	err = db.QueryRow(context.Background(), "select * from posts where id=1").Scan(&id, &title, &content, &timestamp)
+	if err != nil {
+		app.logErr.Println(err)
+	}
+	fmt.Printf("%v\n%v\n%v\n%v\n", id, title, content, timestamp)
+
+	// Using my own error logger
+	// logErr.Fatal(http.ListenAndServe(commandLineFlags.addr, mux))
+	app.logInfo.Printf("Starting server on %s", app.flags.addr)
+	app.logErr.Fatal(server.ListenAndServe())
 }

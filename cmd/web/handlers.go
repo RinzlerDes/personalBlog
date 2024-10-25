@@ -3,12 +3,11 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
@@ -21,47 +20,50 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	t, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "internal errorrrr", http.StatusInternalServerError)
+		// app.logErr.Println(err)
+		// http.Error(w, "internal errorrrr", http.StatusInternalServerError)
+		app.serveError(w, err)
+		return
 	}
 
 	err = t.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "internal errorrrr", http.StatusInternalServerError)
+		app.serveError(w, err)
+		return
 	}
 }
 
-func viewHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 0 {
-		str := fmt.Sprintf("Post %v does not exist\n", id)
+		str := fmt.Sprintf("%s\nPost %v does not exist\n", http.StatusText(http.StatusNotFound), id)
 		http.Error(w, str, http.StatusNotFound)
+		app.logErr.Printf("%v id=%v", err, id)
 		return
 	}
 	fmt.Fprintf(w, "Viewing post %v\n", id)
 	//w.Write([]byte("Viewing post\n"))
 }
 
-func createHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) createHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.Header().Set("Allow", http.MethodPost)
 		// System headers if need to be suppressed, need to be done manually
 		//w.Header()["Date"] = nil
 		// Does the job of the two commented out lines below
-		http.Error(w, "Method not allowedddd", http.StatusMethodNotAllowed)
 		// w.WriteHeader(http.StatusMethodNotAllowed)
 		// w.Write([]byte("Method not alloweddddd\n"))
+		http.Error(w, "Method not allowedddd", http.StatusMethodNotAllowed)
 		return
 	}
 	w.Write([]byte("Creating post"))
 }
 
-func fileServerHandler(w http.ResponseWriter, r *http.Request, h http.Handler) {
+func (app *Application) fileServerHandler(w http.ResponseWriter, r *http.Request, h http.Handler) {
 
 	orig := r.URL.Path
 	strippedPath := r.URL.Path[len("/static/"):] // Get the path after stripping
-	log.Printf("Before: %s\nFile path after StripPrefix: %s", orig, strippedPath)
+	app.logInfo.Printf("Before: %s\nFile path after StripPrefix: %s", orig, strippedPath)
 
 	// Adjust the request URL path to match the file server's expectation
 	r.URL.Path = strippedPath // Set the adjusted path for the file server

@@ -1,3 +1,7 @@
 To get rid of directory listings for file server the dirty way.
 create blank index.html files in each dir.
 find ./ui/static -type d -exec touch {}/index.html \;
+
+Redirecting log statements to files
+`>>` redirects to stdout, `2>>` to stderr
+go run ./cmd/web >>/tmp/info.log 2>>/tmp/error.log
