@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
+	_ "fmt"
 	"log"
 	"net/http"
 	"os"
-	"time"
+	_ "time"
+
+	"personalBlog/internal/models"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -20,14 +22,28 @@ type Application struct {
 	logErr  *log.Logger
 	logInfo *log.Logger
 	flags   *CommandLineFlags
+	posts   *models.PostModel
 }
 
 func main() {
-	app := &Application{
-		logErr:  log.New(os.Stderr, "ERRORR\t", log.Lshortfile|log.Ltime|log.Ldate),
-		logInfo: log.New(os.Stdout, "INFOO\t", log.Lshortfile|log.Ltime|log.Ldate),
-		flags:   &CommandLineFlags{},
+	// Create loggers
+	logErr := log.New(os.Stderr, "ERRORR\t", log.Lshortfile|log.Ltime|log.Ldate)
+	logInfo := log.New(os.Stdout, "INFOO\t", log.Lshortfile|log.Ltime|log.Ldate)
+
+	// Open database connection
+	db, err := openDB("postgres://rinzler@/personalBlog")
+	if err != nil {
+		logErr.Fatalf("Unable to connect to database: %v\n", err)
 	}
+	defer db.Close(context.Background())
+
+	app := &Application{
+		logErr:  logErr,
+		logInfo: logInfo,
+		flags:   &CommandLineFlags{},
+		posts:   &models.PostModel{DB: db},
+	}
+
 	app.flags.getCommandLineFlags()
 
 	server := &http.Server{
@@ -36,25 +52,33 @@ func main() {
 		ErrorLog: app.logErr,
 	}
 
-	db, err := pgx.Connect(context.Background(), "postgres://rinzler@/personalBlog")
-	if err != nil {
-		app.logErr.Fatalf("Unable to connect to database: %v\n", err)
-	}
-	defer db.Close(context.Background())
-
-	var id string
-	var title string
-	var content string
-	var timestamp time.Time
-
-	err = db.QueryRow(context.Background(), "select * from posts where id=1").Scan(&id, &title, &content, &timestamp)
-	if err != nil {
-		app.logErr.Println(err)
-	}
-	fmt.Printf("%v\n%v\n%v\n%v\n", id, title, content, timestamp)
-
-	// Using my own error logger
-	// logErr.Fatal(http.ListenAndServe(commandLineFlags.addr, mux))
 	app.logInfo.Printf("Starting server on %s", app.flags.addr)
 	app.logErr.Fatal(server.ListenAndServe())
 }
+
+func openDB(dsn string) (*pgx.Conn, error) {
+	db, err := pgx.Connect(context.Background(), dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+// func testInsert(motelPost *models.Post) {
+//     	newPost := models.Post{
+// 		Title:   "First insert from within go",
+// 		Content: "More like second try",
+// 	}
+//
+// 	err = app.posts.Insert(&newPost)
+// 	if err != nil {
+// 		logErr.Println(err)
+// 	}
+// 	logInfo.Printf("new post\nID        %d\nTitle       %s\nContent     %s\nCreated     %v", newPost.ID, newPost.Title, newPost.Content, newPost.Created)
+// }

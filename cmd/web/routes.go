@@ -7,7 +7,7 @@ func (app *Application) routes() *http.ServeMux {
 	fileServer := http.FileServer(http.Dir(app.flags.fileServerAddr))
 
 	mux.HandleFunc("/", app.homeHandler)
-	mux.HandleFunc("/posts/view/", app.viewHandler)
+	mux.HandleFunc("/posts/view", app.viewHandler)
 	mux.HandleFunc("/posts/create", app.createHandler)
 	// mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
 	// Does the same thing
