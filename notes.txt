@@ -5,3 +5,6 @@ find ./ui/static -type d -exec touch {}/index.html \;
 Redirecting log statements to files
 `>>` redirects to stdout, `2>>` to stderr
 go run ./cmd/web >>/tmp/info.log 2>>/tmp/error.log
+
+Example insert via terminal
+curl -i --request POST "localhost:8080/posts/create?title=title%20from%20terminal&content=and%20its%20content"

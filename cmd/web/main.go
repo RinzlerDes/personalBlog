@@ -3,11 +3,10 @@ package main
 import (
 	"context"
 	_ "fmt"
-	"log"
 	"net/http"
-	"os"
 	_ "time"
 
+	"personalBlog/internal/loggers"
 	"personalBlog/internal/models"
 
 	"github.com/jackc/pgx/v5"
@@ -19,16 +18,18 @@ type CommandLineFlags struct {
 }
 
 type Application struct {
-	logErr  *log.Logger
-	logInfo *log.Logger
-	flags   *CommandLineFlags
-	posts   *models.PostModel
+	flags *CommandLineFlags
+	posts *models.PostModel
 }
 
+// Create loggers
+var logErr = loggers.LogErr
+var logInfo = loggers.LogInfo
+
 func main() {
-	// Create loggers
-	logErr := log.New(os.Stderr, "ERRORR\t", log.Lshortfile|log.Ltime|log.Ldate)
-	logInfo := log.New(os.Stdout, "INFOO\t", log.Lshortfile|log.Ltime|log.Ldate)
+	// // Create loggers
+	// logErr := loggers.LogErr
+	// logInfo := loggers.LogInfo
 
 	// Open database connection
 	db, err := openDB("postgres://rinzler@/personalBlog")
@@ -38,22 +39,19 @@ func main() {
 	defer db.Close(context.Background())
 
 	app := &Application{
-		logErr:  logErr,
-		logInfo: logInfo,
-		flags:   &CommandLineFlags{},
-		posts:   &models.PostModel{DB: db},
+		flags: &CommandLineFlags{},
+		posts: &models.PostModel{DB: db},
 	}
 
 	app.flags.getCommandLineFlags()
 
 	server := &http.Server{
-		Addr:     app.flags.addr,
-		Handler:  app.routes(),
-		ErrorLog: app.logErr,
+		Addr:    app.flags.addr,
+		Handler: app.routes(),
 	}
 
-	app.logInfo.Printf("Starting server on %s", app.flags.addr)
-	app.logErr.Fatal(server.ListenAndServe())
+	logInfo.Printf("Starting server on %s", app.flags.addr)
+	logErr.Fatal(server.ListenAndServe())
 }
 
 func openDB(dsn string) (*pgx.Conn, error) {
