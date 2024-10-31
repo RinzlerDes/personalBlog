@@ -49,7 +49,7 @@ func (postModel *PostModel) Insert(post *Post) error {
 	return nil
 }
 
-func (postModel *PostModel) Get(id uint) (*Post, error) {
+func (postModel *PostModel) Get(id uint) (Post, error) {
 	post := Post{
 		ID: id,
 	}
@@ -70,10 +70,10 @@ func (postModel *PostModel) Get(id uint) (*Post, error) {
 	if err != nil {
 		logErr.Println("error scanning", err)
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrNoRecord
+			return Post{}, ErrNoRecord
 		}
-		return nil, err
+		return Post{}, err
 	}
 
-	return &post, nil
+	return post, nil
 }
