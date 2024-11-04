@@ -43,7 +43,7 @@ func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := app.posts.Get(uint(id))
+	post, err := app.postModel.Get(uint(id))
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			logErr.Println("post not found: ", err)
@@ -83,7 +83,7 @@ func (app *Application) createHandler(w http.ResponseWriter, r *http.Request) {
 		Content: content,
 	}
 
-	err := app.posts.Insert(&newPost)
+	err := app.postModel.Insert(&newPost)
 	if err != nil {
 		app.serverError(w, fmt.Errorf("could not insert"))
 		return

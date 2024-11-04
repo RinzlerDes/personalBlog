@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	_ "fmt"
 	"net/http"
 	_ "time"
@@ -18,8 +19,8 @@ type CommandLineFlags struct {
 }
 
 type Application struct {
-	flags *CommandLineFlags
-	posts *models.PostModel
+	flags     *CommandLineFlags
+	postModel *models.PostModel
 }
 
 // Create loggers
@@ -27,10 +28,6 @@ var logErr = loggers.LogErr
 var logInfo = loggers.LogInfo
 
 func main() {
-	// // Create loggers
-	// logErr := loggers.LogErr
-	// logInfo := loggers.LogInfo
-
 	// Open database connection
 	db, err := openDB("postgres://rinzler@/personalBlog")
 	if err != nil {
@@ -39,8 +36,8 @@ func main() {
 	defer db.Close(context.Background())
 
 	app := &Application{
-		flags: &CommandLineFlags{},
-		posts: &models.PostModel{DB: db},
+		flags:     &CommandLineFlags{},
+		postModel: &models.PostModel{DB: db},
 	}
 
 	app.flags.getCommandLineFlags()
@@ -49,6 +46,10 @@ func main() {
 		Addr:    app.flags.addr,
 		Handler: app.routes(),
 	}
+
+	// -------------------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------------------
 
 	logInfo.Printf("Starting server on %s", app.flags.addr)
 	logErr.Fatal(server.ListenAndServe())
@@ -68,15 +69,11 @@ func openDB(dsn string) (*pgx.Conn, error) {
 	return db, nil
 }
 
-// func testInsert(motelPost *models.Post) {
-//     	newPost := models.Post{
-// 		Title:   "First insert from within go",
-// 		Content: "More like second try",
-// 	}
-//
-// 	err = app.posts.Insert(&newPost)
-// 	if err != nil {
-// 		logErr.Println(err)
-// 	}
-// 	logInfo.Printf("new post\nID        %d\nTitle       %s\nContent     %s\nCreated     %v", newPost.ID, newPost.Title, newPost.Content, newPost.Created)
-// }
+func (app *Application) testInsert(newPost *models.Post) {
+	err := app.postModel.Insert(newPost)
+	if err != nil {
+		logErr.Println(err)
+		return
+	}
+	logInfo.Printf("new post\nID        %d\nTitle       %s\nContent     %s\nCreated     %v", newPost.ID, newPost.Title, newPost.Content, newPost.Created)
+}

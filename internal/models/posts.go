@@ -77,3 +77,27 @@ func (postModel *PostModel) Get(id uint) (Post, error) {
 
 	return post, nil
 }
+
+func (postModel *PostModel) Latest(limit uint) ([]*Post, error) {
+	sqlStatement := `Select * FROM posts ORDER BY created DESC LIMIT $1;`
+
+	rows, err := postModel.DB.Query(context.Background(), sqlStatement, limit)
+	if err != nil {
+		logErr.Printf("error get lastest %d rows: %s", limit, err.Error())
+		return nil, err
+	}
+
+	posts := make([]*Post, 0, limit)
+
+	for rows.Next() {
+		post := &Post{}
+		rows.Scan(
+			&post.ID,
+			&post.Title,
+			&post.Content,
+			&post.Created,
+		)
+		posts = append(posts, post)
+	}
+	return posts, nil
+}
