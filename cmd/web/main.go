@@ -2,13 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
-	_ "fmt"
 	"net/http"
-	_ "time"
-
 	"personalBlog/internal/loggers"
 	"personalBlog/internal/models"
+	_ "time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -24,8 +21,10 @@ type Application struct {
 }
 
 // Create loggers
-var logErr = loggers.LogErr
-var logInfo = loggers.LogInfo
+var (
+	logErr  = loggers.LogErr
+	logInfo = loggers.LogInfo
+)
 
 func main() {
 	// Open database connection

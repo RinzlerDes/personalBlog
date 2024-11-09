@@ -1,6 +1,25 @@
 {{define "title"}}Home{{end}}
 
 {{define "main"}}
-    <h1>I'm Home</h1>
-    <p>No posts yet</p>
+<h1>The latest posts</h1>
+
+{{range .}}
+<div class="snippet">
+    <div class="metadata">
+        <h1 style="display: inline;">{{.Title}}</h1>
+        <span>Post ID: {{.ID}}</span>
+    </div>
+    <!-- <h2>{{.Title}}</h2> -->
+    <!-- <h2 style="text-align: center">{{.Title}}</h2> -->
+
+    <div class="content">
+        <p>{{if .Content}} {{.Content}} {{else}}No content{{end}}</p>
+    </div>
+
+    <div class="metadata">
+        <p>Created on: {{.Created}}</p>
+    </div>
+</div>
+{{end}}
+
 {{end}}

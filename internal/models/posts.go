@@ -86,6 +86,7 @@ func (postModel *PostModel) Latest(limit uint) ([]*Post, error) {
 		logErr.Printf("error get lastest %d rows: %s", limit, err.Error())
 		return nil, err
 	}
+	defer rows.Close()
 
 	posts := make([]*Post, 0, limit)
 
@@ -99,5 +100,6 @@ func (postModel *PostModel) Latest(limit uint) ([]*Post, error) {
 		)
 		posts = append(posts, post)
 	}
+
 	return posts, nil
 }
