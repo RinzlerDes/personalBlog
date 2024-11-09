@@ -2,7 +2,15 @@
 
 {{define "main"}}
 <div>
-    <label for="postID">Enter a post ID to look up:</label>
-    <input type="number" name="postID" value="">
+    <form name="postSearch" method="post">
+        <label for="postID">Enter a post ID to look up:</label>
+        <input type="number" name="postID" value="">
+        <button type="submit">Search</button>
+        <p>
+            {{if .PostNotFound}}Post not fount{{end}}
+            {{if .IDBelowZero}}ID can not be below 0{{end}}
+            {{if .IDIsNotNumber}}Id you entered is not a number{{end}}
+        </p>
+    </form>
 </div>
 {{end}}

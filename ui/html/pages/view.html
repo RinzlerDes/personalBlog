@@ -3,18 +3,16 @@
 {{define "main"}}
 <div class="snippet">
     <div class="metadata">
-        <h1 style="display: inline;">{{.Title}}</h1>
-        <span>Post ID: {{.ID}}</span>
+        <h1 style="display: inline;">{{.Post.Title}}</h1>
+        <span>Post ID: {{.Post.ID}}</span>
     </div>
-    <!-- <h2>{{.Title}}</h2> -->
-    <!-- <h2 style="text-align: center">{{.Title}}</h2> -->
 
     <div class="content">
-        <p>{{if .Content}} {{.Content}} {{else}}No content{{end}}</p>
+        <p>{{if .Post.Content}} {{.Post.Content}} {{else}}No content{{end}}</p>
     </div>
 
     <div class="metadata">
-        <p>Created on: {{.Created}}</p>
+        <p>Created on: {{.Post.Created}}</p>
     </div>
 </div>
 {{end}}

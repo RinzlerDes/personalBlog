@@ -41,48 +41,48 @@ func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
-	// Get ID from url
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
-	if err != nil || id < 0 {
-		str := fmt.Sprintf("%s\nPost %v does not exist\n", http.StatusText(http.StatusNotFound), id)
-		http.Error(w, str, http.StatusNotFound)
-		logErr.Printf("%v id=%v", err, id)
-		return
-	}
+	// // Get ID from url
+	// id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	// if err != nil || id < 0 {
+	// 	str := fmt.Sprintf("%s\nPost %v does not exist\n", http.StatusText(http.StatusNotFound), id)
+	// 	http.Error(w, str, http.StatusNotFound)
+	// 	logErr.Printf("%v id=%v", err, id)
+	// 	return
+	// }
+	//
+	// // Get the post from DB using the ID
+	// post, err := app.postModel.Get(uint(id))
+	// if err != nil {
+	// 	// No matching record error
+	// 	if errors.Is(err, models.ErrNoRecord) {
+	// 		logErr.Println("post not found: ", err)
+	// 		http.Error(w, err.Error(), http.StatusNotFound)
+	// 		return
+	// 	}
+	//
+	// 	// Internal server error
+	// 	http.Error(w, err.Error(), http.StatusConflict)
+	// 	app.serverError(w, err)
+	// 	return
+	// }
 
-	// Get the post from DB using the ID
-	post, err := app.postModel.Get(uint(id))
-	if err != nil {
-		// No matching record error
-		if errors.Is(err, models.ErrNoRecord) {
-			logErr.Println("post not found: ", err)
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		// Internal server error
-		http.Error(w, err.Error(), http.StatusConflict)
-		app.serverError(w, err)
-		return
-	}
-
-	// Render html templates
-	files := []string{
-		"./ui/html/base.html",
-		"./ui/html/pages/view.html",
-		"./ui/html/partials/nav.html",
-	}
-	t, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = t.ExecuteTemplate(w, "base", post)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	// // Render html templates
+	// files := []string{
+	// 	"./ui/html/base.html",
+	// 	"./ui/html/pages/view.html",
+	// 	"./ui/html/partials/nav.html",
+	// }
+	// t, err := template.ParseFiles(files...)
+	// if err != nil {
+	// 	app.serverError(w, err)
+	// 	return
+	// }
+	//
+	// err = t.ExecuteTemplate(w, "base", post)
+	// if err != nil {
+	// 	app.serverError(w, err)
+	// 	return
+	// }
 
 	// Write the retrieved row on the webpage
 	// str := fmt.Sprintf("Retrieved Post\n" + post.String())
@@ -125,6 +125,77 @@ func (app *Application) createHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
+	postTemplateData := models.PostTemplateData{}
+
+	// Handle form input, feels weird to do this here
+	if r.Method == "POST" {
+		r.ParseForm()
+
+		postErrors := false
+
+		targetPostID, err := strconv.Atoi(r.Form.Get("postID"))
+		if err != nil {
+			logErr.Println(err)
+			postTemplateData.IDIsNotNumber = true
+			postErrors = true
+		}
+		logInfo.Println("should be post id:", targetPostID)
+		if targetPostID < 0 {
+			logInfo.Println("user's targetPostID is below 0")
+			postTemplateData.IDBelowZero = true
+			postErrors = true
+		}
+
+		if !postErrors {
+			recordFound := true
+
+			// Get the post from DB using the ID
+			postTemplateData.Post, err = app.postModel.Get(uint(targetPostID))
+			if err != nil {
+				// No matching record error
+				if errors.Is(err, models.ErrNoRecord) {
+					logErr.Println("post not found in searchHandler: ", err)
+					postTemplateData.PostNotFound = true
+					postErrors = true
+					recordFound = false
+				} else {
+					// Internal server error
+					app.serverError(w, err)
+					return
+				}
+			}
+
+			if recordFound { // Try using cookies to redirect with already fetched struct
+				// All good, redirect to view
+				// http.Redirect(w http.ResponseWriter, r *http.Request, url string, code int)
+				// Render html templates
+				files := []string{
+					"./ui/html/base.html",
+					"./ui/html/pages/view.html",
+					"./ui/html/partials/nav.html",
+				}
+
+				t, err := template.ParseFiles(files...)
+				if err != nil {
+					app.serverError(w, err)
+					return
+				}
+
+				err = t.ExecuteTemplate(w, "base", postTemplateData)
+				if err != nil {
+					app.serverError(w, err)
+					return
+				}
+				return
+			}
+		}
+	}
+
+	// Either first render or error finding post or user input
+	app.RenderSearchTemplate(w, postTemplateData)
+}
+
+func (app *Application) RenderSearchTemplate(w http.ResponseWriter, postTemplateData models.PostTemplateData) {
 	// Render html templates
 	files := []string{
 		"./ui/html/base.html",
@@ -137,7 +208,7 @@ func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = t.ExecuteTemplate(w, "base", nil)
+	err = t.ExecuteTemplate(w, "base", postTemplateData)
 	if err != nil {
 		app.serverError(w, err)
 		return
