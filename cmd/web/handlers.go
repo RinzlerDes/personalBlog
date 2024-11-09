@@ -41,48 +41,52 @@ func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
-	// // Get ID from url
-	// id, err := strconv.Atoi(r.URL.Query().Get("id"))
-	// if err != nil || id < 0 {
-	// 	str := fmt.Sprintf("%s\nPost %v does not exist\n", http.StatusText(http.StatusNotFound), id)
-	// 	http.Error(w, str, http.StatusNotFound)
-	// 	logErr.Printf("%v id=%v", err, id)
-	// 	return
-	// }
-	//
-	// // Get the post from DB using the ID
-	// post, err := app.postModel.Get(uint(id))
-	// if err != nil {
-	// 	// No matching record error
-	// 	if errors.Is(err, models.ErrNoRecord) {
-	// 		logErr.Println("post not found: ", err)
-	// 		http.Error(w, err.Error(), http.StatusNotFound)
-	// 		return
-	// 	}
-	//
-	// 	// Internal server error
-	// 	http.Error(w, err.Error(), http.StatusConflict)
-	// 	app.serverError(w, err)
-	// 	return
-	// }
+	// Get ID from url
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 0 {
+		str := fmt.Sprintf("%s\nPost %v does not exist\n", http.StatusText(http.StatusNotFound), id)
+		http.Error(w, str, http.StatusNotFound)
+		logErr.Printf("%v id=%v", err, id)
+		return
+	}
 
-	// // Render html templates
-	// files := []string{
-	// 	"./ui/html/base.html",
-	// 	"./ui/html/pages/view.html",
-	// 	"./ui/html/partials/nav.html",
-	// }
-	// t, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	return
-	// }
-	//
-	// err = t.ExecuteTemplate(w, "base", post)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	return
-	// }
+	// Get the post from DB using the ID
+	post, err := app.postModel.Get(uint(id))
+	if err != nil {
+		// No matching record error
+		if errors.Is(err, models.ErrNoRecord) {
+			logErr.Println("post not found: ", err)
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		// Internal server error
+		http.Error(w, err.Error(), http.StatusConflict)
+		app.serverError(w, err)
+		return
+	}
+
+	// Render html templates
+	files := []string{
+		"./ui/html/base.html",
+		"./ui/html/pages/view.html",
+		"./ui/html/partials/nav.html",
+	}
+	t, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	postTemplateData := models.PostTemplateData{
+		Post: post,
+	}
+
+	err = t.ExecuteTemplate(w, "base", postTemplateData)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
 
 	// Write the retrieved row on the webpage
 	// str := fmt.Sprintf("Retrieved Post\n" + post.String())
