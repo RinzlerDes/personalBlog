@@ -1,0 +1,20 @@
+{{define "title"}}Insert{{end}}
+
+{{define "main"}}
+<div>
+    <form name="postInsert" method="post">
+        <label for="title">Title</label>
+        <input type="text" name="title" placeholder="placeholder">
+        <label for="content">Content</label>
+        <input type="text" name="content" placeholder="placeholder">
+        <button type="submit">Submit Post</button>
+        <p>
+            {{if .PostInsertionError}}Post was not inserted{{end}}
+            {{if .PostInserted}}Post was inserted{{end}}
+            <!--     {{if .PostNotFound}}Post not fount{{end}} -->
+            <!--     {{if .IDBelowZero}}ID can not be below 0{{end}} -->
+            <!--     {{if .IDIsNotNumber}}Id you entered is not a number{{end}} -->
+        </p>
+    </form>
+</div>
+{{end}}

@@ -219,10 +219,62 @@ func (app *Application) RenderSearchTemplate(w http.ResponseWriter, postTemplate
 	}
 }
 
+func (app *Application) insertHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		app.insertPostLogic(w, r)
+	} else {
+		app.renderInsertHTML(w, models.PostTemplateData{})
+	}
+}
+
+func (app *Application) insertPostLogic(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	title := r.Form.Get("title")
+	content := r.Form.Get("content")
+
+	post := models.Post{
+		Title:   title,
+		Content: content,
+	}
+
+	ptd := models.PostTemplateData{}
+
+	err := app.postModel.Insert(&post)
+	if err != nil {
+		logErr.Println(err)
+		ptd.PostInsertionError = true
+		app.renderInsertHTML(w, ptd)
+		return
+	}
+	logInfo.Println("post inserted")
+
+	ptd.PostInserted = true
+	app.renderInsertHTML(w, ptd)
+}
+
+func (app *Application) renderInsertHTML(w http.ResponseWriter, ptd models.PostTemplateData) {
+	files := []string{
+		"./ui/html/base.html",
+		"./ui/html/partials/nav.html",
+		"./ui/html/pages/insert.html",
+	}
+	t, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	err = t.ExecuteTemplate(w, "base", ptd)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+}
+
 func (app *Application) fileServerHandler(w http.ResponseWriter, r *http.Request, h http.Handler) {
-	orig := r.URL.Path
+	// orig := r.URL.Path
 	strippedPath := r.URL.Path[len("/static/"):] // Get the path after stripping
-	logInfo.Printf("Before: %s\nFile path after StripPrefix: %s", orig, strippedPath)
+	// logInfo.Printf("Before: %s\nFile path after StripPrefix: %s", orig, strippedPath)
 
 	// Adjust the request URL path to match the file server's expectation
 	r.URL.Path = strippedPath // Set the adjusted path for the file server
