@@ -11,9 +11,10 @@
         <p>
             {{if .PostInsertionError}}Post was not inserted{{end}}
             {{if .PostInserted}}Post was inserted{{end}}
-            <!--     {{if .PostNotFound}}Post not fount{{end}} -->
-            <!--     {{if .IDBelowZero}}ID can not be below 0{{end}} -->
-            <!--     {{if .IDIsNotNumber}}Id you entered is not a number{{end}} -->
+            {{if .PostNotFound}}Post not found{{end}}
+            {{if .IDBelowZero}}ID can not be below 0{{end}}
+            {{if .IDIsNotNumber}}Id you entered is not a number{{end}}
+            {{if .EmptyFields}}Input fields can't be empty{{end}}
         </p>
     </form>
 </div>

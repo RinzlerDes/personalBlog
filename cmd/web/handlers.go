@@ -20,11 +20,9 @@ func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.parsedTemplatesCache["home.html"].ExecuteTemplate(w, "base", posts)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	ptd := app.newPostTemplateData()
+	ptd.Posts = posts
+	app.renderPage(w, "home.html", &ptd)
 }
 
 func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
@@ -53,35 +51,10 @@ func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// // Render html templates
-	// files := []string{
-	// 	"./ui/html/base.html",
-	// 	"./ui/html/pages/view.html",
-	// 	"./ui/html/partials/nav.html",
-	// }
-	// t, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	return
-	// }
+	postTemplateData := app.newPostTemplateData()
+	postTemplateData.Post = post
 
-	postTemplateData := models.PostTemplateData{
-		Post: post,
-	}
-
-	// err = app.parsedTemplatesCache["view.html"].ExecuteTemplate(w, "base", postTemplateData)
-	err = app.parsedTemplatesCache["view.html"].ExecuteTemplate(w, "base", postTemplateData)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	// Write the retrieved row on the webpage
-	// str := fmt.Sprintf("Retrieved Post\n" + post.String())
-	// fmt.Fprintf(w, str)
-	//
-	// fmt.Fprintf(w, "Viewing post %v\n", id)
-	// w.Write([]byte("Viewing post\n"))
+	app.renderPage(w, "view.html", &postTemplateData)
 }
 
 func (app *Application) createHandler(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +90,7 @@ func (app *Application) createHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
-	postTemplateData := models.PostTemplateData{}
+	postTemplateData := app.newPostTemplateData()
 
 	// Handle form input, feels weird to do this here
 	if r.Method == "POST" {
@@ -158,55 +131,54 @@ func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if recordFound { // Try using cookies to redirect with already fetched struct
-				err = app.parsedTemplatesCache["view.html"].ExecuteTemplate(w, "base", postTemplateData)
-				if err != nil {
-					app.serverError(w, err)
-					return
-				}
+				app.renderPage(w, "view.html", &postTemplateData)
 				return
 			}
 		}
 	}
 
 	// Either first render or error finding post or user input
-	err := app.parsedTemplatesCache["postSearch.html"].ExecuteTemplate(w, "base", postTemplateData)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	app.renderPage(w, "postSearch.html", &postTemplateData)
 }
 
 func (app *Application) insertHandler(w http.ResponseWriter, r *http.Request) {
+	ptd := app.newPostTemplateData()
+
 	if r.Method == "POST" {
-		app.insertPostLogic(w, r)
+		app.insertPostLogic(w, r, &ptd)
 	} else {
-		app.parsedTemplatesCache["insert.html"].ExecuteTemplate(w, "base", nil)
+		app.renderPage(w, "insert.html", &ptd)
 	}
 }
 
-func (app *Application) insertPostLogic(w http.ResponseWriter, r *http.Request) {
+func (app *Application) insertPostLogic(w http.ResponseWriter, r *http.Request, ptd *models.PostTemplateData) {
 	r.ParseForm()
 	title := r.Form.Get("title")
 	content := r.Form.Get("content")
+
+	if title == "" || content == "" {
+		// app.serverError(w, fmt.Errorf("Title nor content can be empty"))
+		ptd.EmptyFields = true
+		app.renderPage(w, "insert.html", ptd)
+		return
+	}
 
 	post := models.Post{
 		Title:   title,
 		Content: content,
 	}
 
-	ptd := models.PostTemplateData{}
-
 	err := app.postModel.Insert(&post)
 	if err != nil {
 		logErr.Println(err)
 		ptd.PostInsertionError = true
-		app.parsedTemplatesCache["insert.html"].ExecuteTemplate(w, "base", ptd)
+		app.renderPage(w, "insert.html", ptd)
 		return
 	}
 	logInfo.Println("post inserted")
 
 	ptd.PostInserted = true
-	app.parsedTemplatesCache["insert.html"].ExecuteTemplate(w, "base", ptd)
+	app.renderPage(w, "insert.html", ptd)
 }
 
 func (app *Application) fileServerHandler(w http.ResponseWriter, r *http.Request, h http.Handler) {

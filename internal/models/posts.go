@@ -21,8 +21,10 @@ type PostModel struct {
 	DB *pgx.Conn
 }
 
-var logErr = loggers.LogErr
-var logInfo = loggers.LogInfo
+var (
+	logErr  = loggers.LogErr
+	logInfo = loggers.LogInfo
+)
 
 func (post *Post) String() string {
 	return fmt.Sprintf(
@@ -66,7 +68,6 @@ func (postModel *PostModel) Get(id uint) (Post, error) {
 		&post.Content,
 		&post.Created,
 	)
-
 	if err != nil {
 		logErr.Println("error scanning", err)
 		if errors.Is(err, pgx.ErrNoRows) {

@@ -13,12 +13,17 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		return nil, err
 	}
 
+	partials, err := filepath.Glob("./ui/html/partials/*.html")
+	if err != nil {
+		return nil, err
+	}
+
 	for _, page := range pages {
 		files := []string{
 			"./ui/html/base.html",
-			"./ui/html/partials/nav.html",
 			page,
 		}
+		files = append(files, partials...)
 
 		t, err := template.ParseFiles(files...)
 		if err != nil {
