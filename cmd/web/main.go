@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"personalBlog/internal/loggers"
 	"personalBlog/internal/models"
+	"text/template"
 	_ "time"
 
 	"github.com/jackc/pgx/v5"
@@ -16,8 +17,9 @@ type CommandLineFlags struct {
 }
 
 type Application struct {
-	flags     *CommandLineFlags
-	postModel *models.PostModel
+	flags                *CommandLineFlags
+	postModel            *models.PostModel
+	parsedTemplatesCache map[string]*template.Template
 }
 
 // Create loggers
@@ -34,9 +36,16 @@ func main() {
 	}
 	defer db.Close(context.Background())
 
+	// Parse and cache templates
+	templates, err := newTemplateCache()
+	if err != nil {
+		logErr.Fatal(err)
+	}
+
 	app := &Application{
-		flags:     &CommandLineFlags{},
-		postModel: &models.PostModel{DB: db},
+		flags:                &CommandLineFlags{},
+		postModel:            &models.PostModel{DB: db},
+		parsedTemplatesCache: templates,
 	}
 
 	app.flags.getCommandLineFlags()

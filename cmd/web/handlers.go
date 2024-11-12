@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"personalBlog/internal/models"
 	"strconv"
@@ -21,19 +20,7 @@ func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files := []string{
-		"./ui/html/base.html",
-		"./ui/html/pages/home.html",
-		"./ui/html/partials/nav.html",
-	}
-
-	t, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = t.ExecuteTemplate(w, "base", posts)
+	err = app.parsedTemplatesCache["home.html"].ExecuteTemplate(w, "base", posts)
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -66,23 +53,24 @@ func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Render html templates
-	files := []string{
-		"./ui/html/base.html",
-		"./ui/html/pages/view.html",
-		"./ui/html/partials/nav.html",
-	}
-	t, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	// // Render html templates
+	// files := []string{
+	// 	"./ui/html/base.html",
+	// 	"./ui/html/pages/view.html",
+	// 	"./ui/html/partials/nav.html",
+	// }
+	// t, err := template.ParseFiles(files...)
+	// if err != nil {
+	// 	app.serverError(w, err)
+	// 	return
+	// }
 
 	postTemplateData := models.PostTemplateData{
 		Post: post,
 	}
 
-	err = t.ExecuteTemplate(w, "base", postTemplateData)
+	// err = app.parsedTemplatesCache["view.html"].ExecuteTemplate(w, "base", postTemplateData)
+	err = app.parsedTemplatesCache["view.html"].ExecuteTemplate(w, "base", postTemplateData)
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -170,22 +158,7 @@ func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if recordFound { // Try using cookies to redirect with already fetched struct
-				// All good, redirect to view
-				// http.Redirect(w http.ResponseWriter, r *http.Request, url string, code int)
-				// Render html templates
-				files := []string{
-					"./ui/html/base.html",
-					"./ui/html/pages/view.html",
-					"./ui/html/partials/nav.html",
-				}
-
-				t, err := template.ParseFiles(files...)
-				if err != nil {
-					app.serverError(w, err)
-					return
-				}
-
-				err = t.ExecuteTemplate(w, "base", postTemplateData)
+				err = app.parsedTemplatesCache["view.html"].ExecuteTemplate(w, "base", postTemplateData)
 				if err != nil {
 					app.serverError(w, err)
 					return
@@ -196,23 +169,7 @@ func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Either first render or error finding post or user input
-	app.RenderSearchTemplate(w, postTemplateData)
-}
-
-func (app *Application) RenderSearchTemplate(w http.ResponseWriter, postTemplateData models.PostTemplateData) {
-	// Render html templates
-	files := []string{
-		"./ui/html/base.html",
-		"./ui/html/partials/nav.html",
-		"./ui/html/pages/postSearch.html",
-	}
-	t, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = t.ExecuteTemplate(w, "base", postTemplateData)
+	err := app.parsedTemplatesCache["postSearch.html"].ExecuteTemplate(w, "base", postTemplateData)
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -223,7 +180,7 @@ func (app *Application) insertHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		app.insertPostLogic(w, r)
 	} else {
-		app.renderInsertHTML(w, models.PostTemplateData{})
+		app.parsedTemplatesCache["insert.html"].ExecuteTemplate(w, "base", nil)
 	}
 }
 
@@ -243,32 +200,13 @@ func (app *Application) insertPostLogic(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		logErr.Println(err)
 		ptd.PostInsertionError = true
-		app.renderInsertHTML(w, ptd)
+		app.parsedTemplatesCache["insert.html"].ExecuteTemplate(w, "base", ptd)
 		return
 	}
 	logInfo.Println("post inserted")
 
 	ptd.PostInserted = true
-	app.renderInsertHTML(w, ptd)
-}
-
-func (app *Application) renderInsertHTML(w http.ResponseWriter, ptd models.PostTemplateData) {
-	files := []string{
-		"./ui/html/base.html",
-		"./ui/html/partials/nav.html",
-		"./ui/html/pages/insert.html",
-	}
-	t, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = t.ExecuteTemplate(w, "base", ptd)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	app.parsedTemplatesCache["insert.html"].ExecuteTemplate(w, "base", ptd)
 }
 
 func (app *Application) fileServerHandler(w http.ResponseWriter, r *http.Request, h http.Handler) {
