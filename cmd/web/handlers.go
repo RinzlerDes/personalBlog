@@ -92,53 +92,55 @@ func (app *Application) createHandler(w http.ResponseWriter, r *http.Request) {
 func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
 	postTemplateData := app.newPostTemplateData()
 
+	if r.Method != "POST" {
+		app.renderPage(w, "postSearch.html", &postTemplateData)
+		return
+	}
+
 	// Handle form input, feels weird to do this here
-	if r.Method == "POST" {
-		r.ParseForm()
+	err := r.ParseForm()
+	if err != nil {
+		logErr.Println(err)
+		app.renderPage(w, "postSearch.html", nil)
+		return
+	}
 
-		postErrors := false
+	targetPostID, err := strconv.Atoi(r.Form.Get("postID"))
+	if err != nil {
+		logErr.Println(err)
+		postTemplateData.IDIsNotNumber = true
+		app.renderPage(w, "postSearch.html", &postTemplateData)
+		return
+	}
 
-		targetPostID, err := strconv.Atoi(r.Form.Get("postID"))
-		if err != nil {
-			logErr.Println(err)
-			postTemplateData.IDIsNotNumber = true
-			postErrors = true
-		}
-		logInfo.Println("should be post id:", targetPostID)
-		if targetPostID < 0 {
-			logInfo.Println("user's targetPostID is below 0")
-			postTemplateData.IDBelowZero = true
-			postErrors = true
-		}
+	logInfo.Println("should be post id:", targetPostID)
+	if targetPostID < 0 {
+		logInfo.Println("user's targetPostID is below 0")
+		postTemplateData.IDBelowZero = true
+		app.renderPage(w, "postSearch.html", &postTemplateData)
+		return
+	}
 
-		if !postErrors {
-			recordFound := true
-
-			// Get the post from DB using the ID
-			postTemplateData.Post, err = app.postModel.Get(uint(targetPostID))
-			if err != nil {
-				// No matching record error
-				if errors.Is(err, models.ErrNoRecord) {
-					logErr.Println("post not found in searchHandler: ", err)
-					postTemplateData.PostNotFound = true
-					postErrors = true
-					recordFound = false
-				} else {
-					// Internal server error
-					app.serverError(w, err)
-					return
-				}
-			}
-
-			if recordFound { // Try using cookies to redirect with already fetched struct
-				app.renderPage(w, "view.html", &postTemplateData)
-				return
-			}
+	// Get the post from DB using the ID
+	postTemplateData.Post, err = app.postModel.Get(uint(targetPostID))
+	if err != nil {
+		// No matching record error
+		if errors.Is(err, models.ErrNoRecord) {
+			logErr.Println("post not found in searchHandler: ", err)
+			postTemplateData.PostNotFound = true
+			app.renderPage(w, "postSearch.html", &postTemplateData)
+			return
+		} else {
+			// Internal server error
+			app.serverError(w, err)
+			return
 		}
 	}
 
+	app.renderPage(w, "view.html", &postTemplateData)
+
 	// Either first render or error finding post or user input
-	app.renderPage(w, "postSearch.html", &postTemplateData)
+	// app.renderPage(w, "postSearch.html", &postTemplateData)
 }
 
 func (app *Application) insertHandler(w http.ResponseWriter, r *http.Request) {
