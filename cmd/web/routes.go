@@ -2,7 +2,8 @@ package main
 
 import "net/http"
 
-func (app *Application) routes() *http.ServeMux {
+// func (app *Application) routes() *http.ServeMux {
+func (app *Application) routes() http.Handler {
 	mux := http.NewServeMux()
 	fileServer := http.FileServer(http.Dir(app.flags.fileServerAddr))
 
@@ -17,5 +18,6 @@ func (app *Application) routes() *http.ServeMux {
 		app.fileServerHandler(w, r, fileServer)
 	})
 
-	return mux
+	// return mux
+	return logRequest(secureHeaders(mux))
 }

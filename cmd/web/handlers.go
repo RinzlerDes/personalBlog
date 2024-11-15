@@ -9,6 +9,7 @@ import (
 )
 
 func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
+	logInfo.Println("Home page")
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
@@ -90,6 +91,7 @@ func (app *Application) createHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
+	logInfo.Println("Search Page")
 	postTemplateData := app.newPostTemplateData()
 
 	if r.Method != "POST" {
@@ -144,6 +146,7 @@ func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) insertHandler(w http.ResponseWriter, r *http.Request) {
+	logInfo.Println("Insert Page")
 	ptd := app.newPostTemplateData()
 
 	if r.Method == "POST" {
