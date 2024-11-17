@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/justinas/alice"
+)
 
 // func (app *Application) routes() *http.ServeMux {
 func (app *Application) routes() http.Handler {
@@ -18,6 +22,9 @@ func (app *Application) routes() http.Handler {
 		app.fileServerHandler(w, r, fileServer)
 	})
 
+	chain := alice.New(secureHeaders, logRequest, app.recoverPanic)
+
 	// return mux
-	return logRequest(secureHeaders(mux))
+	return chain.Then(mux)
+	// return app.recoverPanic(logRequest(secureHeaders(mux)))
 }

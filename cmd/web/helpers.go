@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// func (app *Application) serverError(w http.ResponseWriter, err error) {
 func (app *Application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
 	// app.logErr.Output(2, trace)

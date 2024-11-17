@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -24,6 +25,19 @@ func logRequest(next http.Handler) http.Handler {
 		logInfo.Printf("request info: %s - %s %s %s", r.RemoteAddr, r.Proto, r.Method,
 			r.URL.RequestURI(),
 		)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *Application) recoverPanic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			err := recover()
+			if err != nil {
+				w.Header().Set("Connection", "close")
+				app.serverError(w, fmt.Errorf("%s", err))
+			}
+		}()
 		next.ServeHTTP(w, r)
 	})
 }
