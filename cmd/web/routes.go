@@ -2,8 +2,6 @@ package main
 
 import (
 	"net/http"
-
-	"github.com/justinas/alice"
 )
 
 // func (app *Application) routes() *http.ServeMux {
@@ -14,7 +12,9 @@ func (app *Application) routes() http.Handler {
 	mux.HandleFunc("/", app.homeHandler)
 	mux.HandleFunc("/posts/view", app.viewHandler)
 	mux.HandleFunc("/posts/create", app.createHandler)
-	mux.HandleFunc("/posts/search", app.searchHandler)
+	mux.HandleFunc("GET /posts/search", app.searchHandler)
+	// mux.HandleFunc("POST /posts/search/{id}", app.searchHandler)
+	mux.HandleFunc("POST /posts/search", app.searchHandler)
 	mux.HandleFunc("/posts/insert", app.insertHandler)
 	// mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
 	// Does the same thing
@@ -22,9 +22,9 @@ func (app *Application) routes() http.Handler {
 		app.fileServerHandler(w, r, fileServer)
 	})
 
-	chain := alice.New(secureHeaders, logRequest, app.recoverPanic)
+	// chain := alice.New(secureHeaders, logRequest, app.recoverPanic)
 
-	// return mux
-	return chain.Then(mux)
+	return mux
+	// return chain.Then(mux)
 	// return app.recoverPanic(logRequest(secureHeaders(mux)))
 }

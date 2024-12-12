@@ -58,6 +58,38 @@ func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
 	app.renderPage(w, "view.html", &postTemplateData)
 }
 
+// func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
+// 	// Get ID from url
+// 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+// 	if err != nil || id < 0 {
+// 		str := fmt.Sprintf("%s\nPost %v does not exist\n", http.StatusText(http.StatusNotFound), id)
+// 		http.Error(w, str, http.StatusNotFound)
+// 		logErr.Printf("%v id=%v", err, id)
+// 		return
+// 	}
+//
+// 	// Get the post from DB using the ID
+// 	post, err := app.postModel.Get(uint(id))
+// 	if err != nil {
+// 		// No matching record error
+// 		if errors.Is(err, models.ErrNoRecord) {
+// 			logErr.Println("post not found: ", err)
+// 			http.Error(w, err.Error(), http.StatusNotFound)
+// 			return
+// 		}
+//
+// 		// Internal server error
+// 		http.Error(w, err.Error(), http.StatusConflict)
+// 		app.serverError(w, err)
+// 		return
+// 	}
+//
+// 	postTemplateData := app.newPostTemplateData()
+// 	postTemplateData.Post = post
+//
+// 	app.renderPage(w, "view.html", &postTemplateData)
+// }
+
 func (app *Application) createHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.Header().Set("Allow", http.MethodPost)
@@ -95,9 +127,11 @@ func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
 	postTemplateData := app.newPostTemplateData()
 
 	if r.Method != "POST" {
+		logInfo.Println("not post request")
 		app.renderPage(w, "postSearch.html", &postTemplateData)
 		return
 	}
+	logInfo.Println("possibly post request")
 
 	// Handle form input, feels weird to do this here
 	err := r.ParseForm()
@@ -108,6 +142,7 @@ func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	targetPostID, err := strconv.Atoi(r.Form.Get("postID"))
+	// targetPostID, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		logErr.Println(err)
 		postTemplateData.IDIsNotNumber = true
@@ -138,6 +173,7 @@ func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	logInfo.Printf("got post %d from db\n", targetPostID)
 
 	app.renderPage(w, "view.html", &postTemplateData)
 

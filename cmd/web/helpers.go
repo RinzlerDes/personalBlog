@@ -39,7 +39,11 @@ func (app *Application) renderPage(w http.ResponseWriter, templateName string, p
 		return
 	}
 
-	buf.WriteTo(w)
+	_, err = buf.WriteTo(w)
+	if err != nil {
+		logErr.Println("error writing buf")
+		app.serverError(w, err)
+	}
 }
 
 func (app *Application) newPostTemplateData() models.PostTemplateData {
