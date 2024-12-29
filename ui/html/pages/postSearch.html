@@ -7,9 +7,7 @@
         <input type="number" name="postID" value="">
         <button type="submit">Search</button>
         <p>
-            {{if .PostNotFound}}Post not found{{end}}
-            {{if .IDBelowZero}}ID can not be below 0{{end}}
-            {{if .IDIsNotNumber}}Id you entered is not a number{{end}}
+            {{if .InsertionErrorMessage}}{{.InsertionErrorMessage}}{{end}}
         </p>
     </form>
 </div>

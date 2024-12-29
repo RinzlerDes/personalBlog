@@ -8,14 +8,7 @@
         <label for="content">Content</label>
         <input type="text" name="content" placeholder="placeholder">
         <button type="submit">Submit Post</button>
-        <p>
-            {{if .PostInsertionError}}Post was not inserted{{end}}
-            {{if .PostInserted}}Post was inserted{{end}}
-            {{if .PostNotFound}}Post not found{{end}}
-            {{if .IDBelowZero}}ID can not be below 0{{end}}
-            {{if .IDIsNotNumber}}Id you entered is not a number{{end}}
-            {{if .EmptyFields}}Input fields can't be empty{{end}}
-        </p>
+        {{if .InsertionErrorMessage}}{{.InsertionErrorMessage}}{{end}}
     </form>
 </div>
 {{end}}
