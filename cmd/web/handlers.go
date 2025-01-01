@@ -35,6 +35,7 @@ func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, str, http.StatusNotFound)
 		logErr.Printf("%v id=%v", err, id)
 		return
+
 	}
 
 	logInfo.Printf("id: %d\n", id)
@@ -195,18 +196,21 @@ func (app *Application) searchHandlerProcessForm(w http.ResponseWriter, r *http.
 }
 
 func (app *Application) insertHandler(w http.ResponseWriter, r *http.Request) {
-	logInfo.Println("Insert Page")
+	logInfo.Println("insertHandler")
 	ptd := app.newPostTemplateData()
-
-	if r.Method == "POST" {
-		app.insertPostLogic(w, r, &ptd)
-	} else {
-		app.renderPage(w, "insert.html", &ptd)
-	}
+	app.renderPage(w, "insert.html", &ptd)
 }
 
-func (app *Application) insertPostLogic(w http.ResponseWriter, r *http.Request, ptd *models.PostTemplateData) {
-	r.ParseForm()
+func (app *Application) insertHandlerPost(w http.ResponseWriter, r *http.Request) {
+	logInfo.Println("insertHandlerPost")
+	ptd := app.newPostTemplateData()
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "can't parse form", http.StatusBadRequest)
+		return
+	}
+
 	title := r.Form.Get("title")
 	content := r.Form.Get("content")
 
@@ -214,7 +218,7 @@ func (app *Application) insertPostLogic(w http.ResponseWriter, r *http.Request, 
 		// app.serverError(w, fmt.Errorf("Title nor content can be empty"))
 		// ptd.EmptyFields = true
 		ptd.InsertionErrorMessage = models.InsertionErrorsState[models.EmptyFields]
-		app.renderPage(w, "insert.html", ptd)
+		app.renderPage(w, "insert.html", &ptd)
 		return
 	}
 
@@ -223,18 +227,19 @@ func (app *Application) insertPostLogic(w http.ResponseWriter, r *http.Request, 
 		Content: content,
 	}
 
-	err := app.postModel.Insert(&post)
+	err = app.postModel.Insert(&post)
 	if err != nil {
 		logErr.Println(err)
 		// ptd.PostInsertionError = true
 		ptd.InsertionErrorMessage = models.InsertionErrorsState[models.PostInsertionError]
-		app.renderPage(w, "insert.html", ptd)
+		app.renderPage(w, "insert.html", &ptd)
 		return
 	}
 	logInfo.Println("post inserted")
 
-	// ptd.PostInserted = true
-	app.renderPage(w, "insert.html", ptd)
+	ptd.PostInserted = true
+
+	app.renderPage(w, "insert.html", &ptd)
 }
 
 func (app *Application) fileServerHandler(w http.ResponseWriter, r *http.Request, h http.Handler) {

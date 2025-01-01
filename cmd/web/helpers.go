@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"personalBlog/internal/models"
 	"runtime/debug"
-	"time"
 )
 
 // func (app *Application) serverError(w http.ResponseWriter, err error) {
@@ -47,7 +46,8 @@ func (app *Application) renderPage(w http.ResponseWriter, templateName string, p
 }
 
 func (app *Application) newPostTemplateData() models.PostTemplateData {
-	return models.PostTemplateData{
-		CurrentYear: time.Now().Year(),
-	}
+	return models.NewPostTemplateData()
+	// return models.PostTemplateData{
+	// 	CurrentYear: time.Now().Year(),
+	// }
 }

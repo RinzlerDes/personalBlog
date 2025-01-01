@@ -9,6 +9,7 @@
         <input type="text" name="content" placeholder="placeholder">
         <button type="submit">Submit Post</button>
         {{if .InsertionErrorMessage}}{{.InsertionErrorMessage}}{{end}}
+        {{if .PostInserted}}{{.InsertionMessage}}{{end}}
     </form>
 </div>
 {{end}}

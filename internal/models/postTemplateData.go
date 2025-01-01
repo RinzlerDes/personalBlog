@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 // type PostTemplateData struct {
 // 	Posts              []*Post
 // 	Post               Post
@@ -12,9 +14,20 @@ package models
 // 	EmptyFields        bool
 // }
 
+var insertionMessage = "Post inserted"
+
 type PostTemplateData struct {
 	Posts                 []*Post
 	Post                  Post
 	CurrentYear           int
 	InsertionErrorMessage string
+	InsertionMessage      *string
+	PostInserted          bool
+}
+
+func NewPostTemplateData() PostTemplateData {
+	return PostTemplateData{
+		CurrentYear:      time.Now().Year(),
+		InsertionMessage: &insertionMessage,
+	}
 }
