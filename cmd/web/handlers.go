@@ -149,31 +149,42 @@ func (app *Application) searchHandlerProcessForm(w http.ResponseWriter, r *http.
 	}
 
 	targetPostIDString := r.Form.Get("postID")
-	if targetPostIDString == "" {
-		ptd.FormErrors["id"] = models.FormErrorsState[models.EmptyFields]
-		ptd.InsertionErrorMessage = models.FormErrorsState[models.EmptyFields]
+
+	formErrors := ptd.FormErrors
+
+	formErrors.RunChecksForId(targetPostIDString, "id")
+
+	if !formErrors.Valid() {
 		app.renderPage(w, "postSearch.html", &ptd)
 		return
 	}
+
+	// if targetPostIDString == "" {
+	// 	ptd.FormErrors["id"] = models.FormErrorsState[models.EmptyFields]
+	// 	// ptd.FormErrors.NotBlank(targetPostIDString)
+	// 	ptd.InsertionErrorMessage = models.FormErrorsState[models.EmptyFields]
+	// 	app.renderPage(w, "postSearch.html", &ptd)
+	// 	return
+	// }
 
 	targetPostID, err := strconv.Atoi(targetPostIDString)
-	// targetPostID, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
-		logErr.Println(err)
-		// ptd.IDIsNotNumber = true
-		ptd.InsertionErrorMessage = models.FormErrorsState[models.IDIsNotNumber]
-		app.renderPage(w, "postSearch.html", &ptd)
-		return
-	}
-
-	logInfo.Println("should be post id:", targetPostID)
-	if targetPostID < 0 {
-		logInfo.Println("user's targetPostID is below 0")
-		// ptd.IDBelowZero = true
-		ptd.InsertionErrorMessage = models.FormErrorsState[models.IDBelowZero]
-		app.renderPage(w, "postSearch.html", &ptd)
-		return
-	}
+	// // targetPostID, err := strconv.Atoi(r.PathValue("id"))
+	// if err != nil {
+	// 	logErr.Println(err)
+	// 	// ptd.IDIsNotNumber = true
+	// 	ptd.InsertionErrorMessage = models.FormErrorsState[models.IDIsNotNumber]
+	// 	app.renderPage(w, "postSearch.html", &ptd)
+	// 	return
+	// }
+	//
+	// logInfo.Println("should be post id:", targetPostID)
+	// if targetPostID < 0 {
+	// 	logInfo.Println("user's targetPostID is below 0")
+	// 	// ptd.IDBelowZero = true
+	// 	ptd.InsertionErrorMessage = models.FormErrorsState[models.IDBelowZero]
+	// 	app.renderPage(w, "postSearch.html", &ptd)
+	// 	return
+	// }
 
 	// Get the post from DB using the ID
 	ptd.Post, err = app.postModel.Get(uint(targetPostID))
@@ -220,24 +231,26 @@ func (app *Application) insertHandlerPost(w http.ResponseWriter, r *http.Request
 	ptd.Post.Content = strings.TrimSpace(r.Form.Get("content"))
 	logInfo.Println(ptd.Post)
 
-	if ptd.Post.Title == "" {
-		// app.serverError(w, fmt.Errorf("Title nor content can be empty"))
-		// ptd.EmptyFields = true
-		ptd.FormErrors["title"] = models.FormErrorsState[models.EmptyFields]
-		ptd.InsertionErrorMessage = models.FormErrorsState[models.EmptyFields]
-	}
+	// UNCOMMENT ALL OF THIS AND FIX
 
-	if ptd.Post.Content == "" {
-		// app.serverError(w, fmt.Errorf("Title nor content can be empty"))
-		// ptd.EmptyFields = true
-		ptd.FormErrors["content"] = models.FormErrorsState[models.EmptyFields]
-		ptd.InsertionErrorMessage = models.FormErrorsState[models.EmptyFields]
-	}
-
-	if len(ptd.FormErrors) > 0 {
-		app.renderPage(w, "insert.html", &ptd)
-		return
-	}
+	// if ptd.Post.Title == "" {
+	// 	// app.serverError(w, fmt.Errorf("Title nor content can be empty"))
+	// 	// ptd.EmptyFields = true
+	// 	ptd.FormErrors["title"] = models.FormErrorsState[models.EmptyFields]
+	// 	ptd.InsertionErrorMessage = models.FormErrorsState[models.EmptyFields]
+	// }
+	//
+	// if ptd.Post.Content == "" {
+	// 	// app.serverError(w, fmt.Errorf("Title nor content can be empty"))
+	// 	// ptd.EmptyFields = true
+	// 	ptd.FormErrors["content"] = models.FormErrorsState[models.EmptyFields]
+	// 	ptd.InsertionErrorMessage = models.FormErrorsState[models.EmptyFields]
+	// }
+	//
+	// if len(ptd.FormErrors) > 0 {
+	// 	app.renderPage(w, "insert.html", &ptd)
+	// 	return
+	// }
 
 	err = app.postModel.Insert(&ptd.Post)
 	if err != nil {

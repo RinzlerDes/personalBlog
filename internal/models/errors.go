@@ -4,10 +4,10 @@ import "errors"
 
 var ErrNoRecord = errors.New("models: no matching record found")
 
-type FormErrors int
+type FormError int
 
 const (
-	PostNotFound FormErrors = iota
+	PostNotFound FormError = iota
 	IDBelowZero
 	IDIsNotNumber
 	PostInsertionError
@@ -17,7 +17,7 @@ const (
 	EmptyContent
 )
 
-var FormErrorsState = map[FormErrors]string{
+var FormErrorsState = map[FormError]string{
 	PostInsertionError: "Post was not inserted",
 	PostInserted:       "Post was inserted",
 	PostNotFound:       "Post not found",

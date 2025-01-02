@@ -4,13 +4,13 @@
 <div>
     <form name="postInsert" method="post">
         <label for="title">Title</label>
-        {{with .FormErrors.title}}
+        {{with .FormErrors.Errors.title}}
         <label class="error">{{.}}</label>
         {{end}}
         <input type="text" name="title" value="{{.Post.Title}}" placeholder="placeholder">
 
         <label for="content">Content</label>
-        {{with .FormErrors.content}}
+        {{with .FormErrors.Errors.content}}
         <label class="error">{{.}}</label>
         {{end}}
         <input type="text" name="content" value="{{.Post.Content}}" placeholder="placeholder">
