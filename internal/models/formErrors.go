@@ -10,8 +10,35 @@ type FormErrors struct {
 	Errors map[string]string
 }
 
-func (fe *FormErrors) Valid() bool {
-	return len(fe.Errors) == 0
+func (fe *FormErrors) RunChecksForId(text string, key string) {
+	ok := fe.NotBlank(text, key)
+	if !ok {
+		return
+	}
+	fe.CheckInputIsUInt(text, key)
+}
+
+func (fe *FormErrors) RunChecksForTitle(text string, key string) {
+	ok := fe.NotBlank(text, key)
+	if !ok {
+		return
+	}
+
+	tooBig := fe.stringGT100(text, key)
+	if tooBig {
+		return
+	}
+}
+
+func (fe *FormErrors) RunChecksForContent(text string, key string) {
+	ok := fe.NotBlank(text, key)
+	if !ok {
+		return
+	}
+}
+
+func (fe *FormErrors) NotValid() bool {
+	return len(fe.Errors) > 0
 }
 
 func (fe *FormErrors) AddError(key string, errorMessage string) {
@@ -34,10 +61,11 @@ func (fe *FormErrors) CheckInputIsUInt(text string, key string) {
 	}
 }
 
-func (fe *FormErrors) RunChecksForId(text string, key string) {
-	ok := fe.NotBlank(text, key)
-	if !ok {
-		return
+func (fe *FormErrors) stringGT100(str string, key string) bool {
+	if len(str) > 100 {
+		fe.AddError(key, FormErrorsState[TextGreaterThan100])
+		return true
 	}
-	fe.CheckInputIsUInt(text, key)
+
+	return false
 }

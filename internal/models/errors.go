@@ -15,6 +15,7 @@ const (
 	EmptyFields
 	EmptyTitle
 	EmptyContent
+	TextGreaterThan100
 )
 
 var FormErrorsState = map[FormError]string{
@@ -24,4 +25,5 @@ var FormErrorsState = map[FormError]string{
 	IDBelowZero:        "ID can not be below 0",
 	IDIsNotNumber:      "Id you entered is not a number",
 	EmptyFields:        "Input fields can't be empty",
+	TextGreaterThan100: "Text can not be more than 100 characters",
 }
