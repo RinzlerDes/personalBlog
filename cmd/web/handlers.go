@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"personalBlog/internal/models"
 	"strconv"
+	"strings"
 )
 
 func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -136,17 +137,21 @@ func (app *Application) searchHandlerProcessForm(w http.ResponseWriter, r *http.
 	logInfo.Println("Search Page")
 	ptd := app.newPostTemplateData()
 
+	// Limit amount of bytes able to be sent from a form
+	// r.Body = http.MaxBytesReader(w, r.Body, 4)
+
 	// Handle form input, feels weird to do this here
 	err := r.ParseForm()
 	if err != nil {
 		logErr.Println(err)
-		app.renderPage(w, "postSearch.html", nil)
+		app.renderPage(w, "postSearch.html", &ptd)
 		return
 	}
 
 	targetPostIDString := r.Form.Get("postID")
 	if targetPostIDString == "" {
-		ptd.InsertionErrorMessage = models.InsertionErrorsState[models.EmptyFields]
+		ptd.FormErrors["id"] = models.FormErrorsState[models.EmptyFields]
+		ptd.InsertionErrorMessage = models.FormErrorsState[models.EmptyFields]
 		app.renderPage(w, "postSearch.html", &ptd)
 		return
 	}
@@ -156,7 +161,7 @@ func (app *Application) searchHandlerProcessForm(w http.ResponseWriter, r *http.
 	if err != nil {
 		logErr.Println(err)
 		// ptd.IDIsNotNumber = true
-		ptd.InsertionErrorMessage = models.InsertionErrorsState[models.IDIsNotNumber]
+		ptd.InsertionErrorMessage = models.FormErrorsState[models.IDIsNotNumber]
 		app.renderPage(w, "postSearch.html", &ptd)
 		return
 	}
@@ -165,7 +170,7 @@ func (app *Application) searchHandlerProcessForm(w http.ResponseWriter, r *http.
 	if targetPostID < 0 {
 		logInfo.Println("user's targetPostID is below 0")
 		// ptd.IDBelowZero = true
-		ptd.InsertionErrorMessage = models.InsertionErrorsState[models.IDBelowZero]
+		ptd.InsertionErrorMessage = models.FormErrorsState[models.IDBelowZero]
 		app.renderPage(w, "postSearch.html", &ptd)
 		return
 	}
@@ -177,7 +182,7 @@ func (app *Application) searchHandlerProcessForm(w http.ResponseWriter, r *http.
 		if errors.Is(err, models.ErrNoRecord) {
 			logErr.Println("post not found in searchHandler: ", err)
 			// ptd.PostNotFound = true
-			ptd.InsertionErrorMessage = models.InsertionErrorsState[models.PostNotFound]
+			ptd.InsertionErrorMessage = models.FormErrorsState[models.PostNotFound]
 
 			app.renderPage(w, "postSearch.html", &ptd)
 			return
@@ -211,27 +216,34 @@ func (app *Application) insertHandlerPost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	title := r.Form.Get("title")
-	content := r.Form.Get("content")
+	ptd.Post.Title = strings.TrimSpace(r.Form.Get("title"))
+	ptd.Post.Content = strings.TrimSpace(r.Form.Get("content"))
+	logInfo.Println(ptd.Post)
 
-	if title == "" || content == "" {
+	if ptd.Post.Title == "" {
 		// app.serverError(w, fmt.Errorf("Title nor content can be empty"))
 		// ptd.EmptyFields = true
-		ptd.InsertionErrorMessage = models.InsertionErrorsState[models.EmptyFields]
+		ptd.FormErrors["title"] = models.FormErrorsState[models.EmptyFields]
+		ptd.InsertionErrorMessage = models.FormErrorsState[models.EmptyFields]
+	}
+
+	if ptd.Post.Content == "" {
+		// app.serverError(w, fmt.Errorf("Title nor content can be empty"))
+		// ptd.EmptyFields = true
+		ptd.FormErrors["content"] = models.FormErrorsState[models.EmptyFields]
+		ptd.InsertionErrorMessage = models.FormErrorsState[models.EmptyFields]
+	}
+
+	if len(ptd.FormErrors) > 0 {
 		app.renderPage(w, "insert.html", &ptd)
 		return
 	}
 
-	post := models.Post{
-		Title:   title,
-		Content: content,
-	}
-
-	err = app.postModel.Insert(&post)
+	err = app.postModel.Insert(&ptd.Post)
 	if err != nil {
 		logErr.Println(err)
 		// ptd.PostInsertionError = true
-		ptd.InsertionErrorMessage = models.InsertionErrorsState[models.PostInsertionError]
+		ptd.InsertionErrorMessage = models.FormErrorsState[models.PostInsertionError]
 		app.renderPage(w, "insert.html", &ptd)
 		return
 	}

@@ -22,6 +22,7 @@ type PostTemplateData struct {
 	CurrentYear           int
 	InsertionErrorMessage string
 	InsertionMessage      *string
+	FormErrors       map[string]string
 	PostInserted          bool
 }
 
@@ -29,5 +30,6 @@ func NewPostTemplateData() PostTemplateData {
 	return PostTemplateData{
 		CurrentYear:      time.Now().Year(),
 		InsertionMessage: &insertionMessage,
+		FormErrors:  make(map[string]string),
 	}
 }

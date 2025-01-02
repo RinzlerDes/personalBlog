@@ -4,7 +4,11 @@
 <div>
     <form name="postSearch" method="POST">
         <label for="postID">Enter a post ID to look up:</label>
+        {{with .FormErrors.id}}
+        <label class="error">{{.}}</label>
+        {{end}}
         <input type="number" name="postID" value="">
+
         <button type="submit">Search</button>
         <p>
             {{if .InsertionErrorMessage}}{{.InsertionErrorMessage}}{{end}}

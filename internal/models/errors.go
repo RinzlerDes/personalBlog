@@ -13,9 +13,11 @@ const (
 	PostInsertionError
 	PostInserted
 	EmptyFields
+	EmptyTitle
+	EmptyContent
 )
 
-var InsertionErrorsState = map[FormErrors]string{
+var FormErrorsState = map[FormErrors]string{
 	PostInsertionError: "Post was not inserted",
 	PostInserted:       "Post was inserted",
 	PostNotFound:       "Post not found",
