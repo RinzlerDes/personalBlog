@@ -36,19 +36,19 @@ func (post *Post) String() string {
 	)
 }
 
-func (postModel *PostModel) Insert(post *Post) error {
+func (postModel *PostModel) Insert(post *Post) (uint, error) {
 	SQLStatement := `INSERT INTO posts (title, content, created) VALUES($1, $2, current_timestamp) RETURNING id, created`
 
 	var id uint
 	var created time.Time
 	err := postModel.DB.QueryRow(context.Background(), SQLStatement, post.Title, post.Content).Scan(&id, &created)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	post.ID = id
-	post.Created = created
+	// post.ID = id
+	// post.Created = created
 
-	return nil
+	return id, nil
 }
 
 func (postModel *PostModel) Get(id uint) (Post, error) {

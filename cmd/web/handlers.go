@@ -28,6 +28,7 @@ func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
+	logInfo.Println("In viewHandler")
 	// Get ID from url
 	// id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	id, err := strconv.Atoi(r.PathValue("id"))
@@ -52,79 +53,16 @@ func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Internal server error
-		http.Error(w, err.Error(), http.StatusConflict)
+		// http.Error(w, err.Error(), http.StatusConflict)
 		app.serverError(w, err)
 		return
 	}
+	logInfo.Println("post found")
 
 	postTemplateData := app.newPostTemplateData()
 	postTemplateData.Post = post
 
 	app.renderPage(w, "view.html", &postTemplateData)
-}
-
-// func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
-// 	// Get ID from url
-// 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
-// 	if err != nil || id < 0 {
-// 		str := fmt.Sprintf("%s\nPost %v does not exist\n", http.StatusText(http.StatusNotFound), id)
-// 		http.Error(w, str, http.StatusNotFound)
-// 		logErr.Printf("%v id=%v", err, id)
-// 		return
-// 	}
-//
-// 	// Get the post from DB using the ID
-// 	post, err := app.postModel.Get(uint(id))
-// 	if err != nil {
-// 		// No matching record error
-// 		if errors.Is(err, models.ErrNoRecord) {
-// 			logErr.Println("post not found: ", err)
-// 			http.Error(w, err.Error(), http.StatusNotFound)
-// 			return
-// 		}
-//
-// 		// Internal server error
-// 		http.Error(w, err.Error(), http.StatusConflict)
-// 		app.serverError(w, err)
-// 		return
-// 	}
-//
-// 	postTemplateData := app.newPostTemplateData()
-// 	postTemplateData.Post = post
-//
-// 	app.renderPage(w, "view.html", &postTemplateData)
-// }
-
-func (app *Application) createHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.Header().Set("Allow", http.MethodPost)
-		http.Error(w, "Method not allowedddd", http.StatusMethodNotAllowed)
-		return
-	}
-
-	title := r.URL.Query().Get("title")
-	content := r.URL.Query().Get("content")
-
-	if title == "" || content == "" {
-		app.serverError(w, fmt.Errorf("Title nor content can be empty"))
-		return
-	}
-
-	newPost := models.Post{
-		Title:   title,
-		Content: content,
-	}
-
-	err := app.postModel.Insert(&newPost)
-	if err != nil {
-		app.serverError(w, fmt.Errorf("could not insert"))
-		return
-	}
-
-	fmt.Fprintf(w, "Created a new post!!!\nID      %d\nTitle       %s\nContent     %s\nCreated     %v\n",
-		newPost.ID, newPost.Title, newPost.Content, newPost.Created)
-
-	w.Write([]byte("Creating post"))
 }
 
 func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -215,7 +153,7 @@ func (app *Application) insertHandlerPost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = app.postModel.Insert(&ptd.Post)
+	id, err := app.postModel.Insert(&ptd.Post)
 	if err != nil {
 		logErr.Println(err)
 		// ptd.PostInsertionError = true
@@ -227,7 +165,9 @@ func (app *Application) insertHandlerPost(w http.ResponseWriter, r *http.Request
 
 	ptd.PostInserted = true
 
-	app.renderPage(w, "insert.html", &ptd)
+	// Redirect to new post
+	url := fmt.Sprintf("/posts/view/%d", id)
+	http.Redirect(w, r, url, http.StatusSeeOther)
 }
 
 func (app *Application) fileServerHandler(w http.ResponseWriter, r *http.Request, h http.Handler) {

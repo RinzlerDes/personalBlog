@@ -78,7 +78,7 @@ func openDB(dsn string) (*pgx.Conn, error) {
 }
 
 func (app *Application) testInsert(newPost *models.Post) {
-	err := app.postModel.Insert(newPost)
+	_, err := app.postModel.Insert(newPost)
 	if err != nil {
 		logErr.Println(err)
 		return

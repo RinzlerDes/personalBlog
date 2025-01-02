@@ -14,7 +14,7 @@ func (app *Application) routes() http.Handler {
 	mux.HandleFunc("/", app.homeHandler)
 	// mux.HandleFunc("/posts/view", app.viewHandler)
 	mux.HandleFunc("GET /posts/view/{id}", app.viewHandler)
-	mux.HandleFunc("/posts/create", app.createHandler)
+	// mux.HandleFunc("/posts/create", app.createHandler)
 	mux.HandleFunc("GET /posts/search", app.searchHandler)
 	// mux.HandleFunc("POST /posts/search/{id}", app.searchHandler)
 	mux.HandleFunc("POST /posts/search", app.searchHandlerProcessForm)
