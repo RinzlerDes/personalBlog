@@ -6,9 +6,11 @@ import (
 	"personalBlog/internal/loggers"
 	"personalBlog/internal/models"
 	"text/template"
-	_ "time"
+	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/alexedwards/scs/pgxstore"
+	"github.com/alexedwards/scs/v2"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type CommandLineFlags struct {
@@ -20,6 +22,7 @@ type Application struct {
 	flags                *CommandLineFlags
 	postModel            *models.PostModel
 	parsedTemplatesCache map[string]*template.Template
+	sessionManager       *scs.SessionManager
 }
 
 // Create loggers
@@ -30,11 +33,11 @@ var (
 
 func main() {
 	// Open database connection
-	db, err := openDB("postgres://rinzler@/personalBlog")
+	dbPool, err := openDB("postgres://rinzler@/personalBlog")
 	if err != nil {
 		logErr.Fatalf("Unable to connect to database: %v\n", err)
 	}
-	defer db.Close(context.Background())
+	defer dbPool.Close()
 
 	// Parse and cache templates
 	templates, err := newTemplateCache()
@@ -42,10 +45,15 @@ func main() {
 		logErr.Fatal(err)
 	}
 
+	sessionManager := scs.New()
+	sessionManager.Store = pgxstore.New(dbPool)
+	sessionManager.Lifetime = 1 * time.Minute
+
 	app := &Application{
 		flags:                &CommandLineFlags{},
-		postModel:            &models.PostModel{DB: db},
+		postModel:            &models.PostModel{DBPool: dbPool},
 		parsedTemplatesCache: templates,
+		sessionManager:       sessionManager,
 	}
 
 	app.flags.getCommandLineFlags()
@@ -56,28 +64,27 @@ func main() {
 	}
 
 	// -------------------------------------------------------------------------------------
-
 	// -------------------------------------------------------------------------------------
-
 	logInfo.Printf("Starting server on %s", app.flags.addr)
 	logErr.Fatal(server.ListenAndServe())
 }
 
-func openDB(dsn string) (*pgx.Conn, error) {
-	db, err := pgx.Connect(context.Background(), dsn)
+func openDB(dsn string) (*pgxpool.Pool, error) {
+	// db, err := pgx.Connect(context.Background(), dsn)
+	dbPool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.Ping(context.Background())
+	err = dbPool.Ping(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	return db, nil
+	return dbPool, nil
 }
 
-func (app *Application) testInsert(newPost *models.Post) {
+func (app *Application) restInsert(newPost *models.Post) {
 	_, err := app.postModel.Insert(newPost)
 	if err != nil {
 		logErr.Println(err)

@@ -12,11 +12,8 @@ func (app *Application) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir(app.flags.fileServerAddr))
 
 	mux.HandleFunc("/", app.homeHandler)
-	// mux.HandleFunc("/posts/view", app.viewHandler)
 	mux.HandleFunc("GET /posts/view/{id}", app.viewHandler)
-	// mux.HandleFunc("/posts/create", app.createHandler)
 	mux.HandleFunc("GET /posts/search", app.searchHandler)
-	// mux.HandleFunc("POST /posts/search/{id}", app.searchHandler)
 	mux.HandleFunc("POST /posts/search", app.searchHandlerProcessForm)
 	mux.HandleFunc("GET /posts/insert", app.insertHandler)
 	mux.HandleFunc("POST /posts/insert", app.insertHandlerPost)

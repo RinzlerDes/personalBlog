@@ -12,6 +12,7 @@ import (
 func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
 	logInfo.Println("Home page")
 	if r.URL.Path != "/" {
+		logInfo.Printf("%s is an invalid path, serve http not found", r.URL.Path)
 		http.NotFound(w, r)
 		return
 	}

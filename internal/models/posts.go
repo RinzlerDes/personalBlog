@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Post struct {
@@ -18,7 +19,7 @@ type Post struct {
 }
 
 type PostModel struct {
-	DB *pgx.Conn
+	DBPool *pgxpool.Pool
 }
 
 var (
@@ -41,7 +42,7 @@ func (postModel *PostModel) Insert(post *Post) (uint, error) {
 
 	var id uint
 	var created time.Time
-	err := postModel.DB.QueryRow(context.Background(), SQLStatement, post.Title, post.Content).Scan(&id, &created)
+	err := postModel.DBPool.QueryRow(context.Background(), SQLStatement, post.Title, post.Content).Scan(&id, &created)
 	if err != nil {
 		return 0, err
 	}
@@ -58,7 +59,7 @@ func (postModel *PostModel) Get(id uint) (Post, error) {
 
 	SQLStatement := `SELECT * FROM posts WHERE id = $1`
 
-	err := postModel.DB.QueryRow(
+	err := postModel.DBPool.QueryRow(
 		context.Background(),
 		SQLStatement,
 		id,
@@ -82,7 +83,7 @@ func (postModel *PostModel) Get(id uint) (Post, error) {
 func (postModel *PostModel) Latest(limit uint) ([]*Post, error) {
 	sqlStatement := `Select * FROM posts ORDER BY created DESC LIMIT $1;`
 
-	rows, err := postModel.DB.Query(context.Background(), sqlStatement, limit)
+	rows, err := postModel.DBPool.Query(context.Background(), sqlStatement, limit)
 	if err != nil {
 		logErr.Printf("error get lastest %d rows: %s", limit, err.Error())
 		return nil, err
