@@ -17,10 +17,14 @@ func (app *Application) serverError(w http.ResponseWriter, err error) {
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
-func (flags *CommandLineFlags) getCommandLineFlags() {
+// Parse command line arguments and store them in flags struct
+// func (flags *CommandLineFlags) getCommandLineFlags() {
+func getCommandLineFlags() CommandLineFlags {
+	flags := CommandLineFlags{}
 	flag.StringVar(&flags.addr, "addr", "localhost:8080", "HTTP network address")
 	flag.StringVar(&flags.fileServerAddr, "fileServerAddr", "./ui/static", "Path to static assets")
 	flag.Parse()
+	return flags
 }
 
 func (app *Application) renderPage(w http.ResponseWriter, templateName string, ptd *models.PostTemplateData) {

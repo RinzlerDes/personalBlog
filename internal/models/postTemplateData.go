@@ -5,13 +5,14 @@ import "time"
 var insertionMessage = "Post inserted"
 
 type PostTemplateData struct {
-	Posts                 []*Post
-	Post                  Post
-	CurrentYear           int
-	InsertionErrorMessage string
-	InsertionMessage      *string
-	FormErrors            FormErrors
-	PostInserted          bool
+	Posts                   []*Post
+	Post                    Post
+	CurrentYear             int
+	InsertionErrorMessage   string
+	InsertionMessage        *string
+	FormErrors              FormErrors
+	PostInserted            bool
+	InitialInsertionMessage string
 }
 
 func NewPostTemplateData() PostTemplateData {

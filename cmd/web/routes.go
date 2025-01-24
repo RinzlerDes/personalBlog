@@ -24,8 +24,15 @@ func (app *Application) routes() http.Handler {
 	})
 
 	chain := alice.New(secureHeaders, logRequest, app.recoverPanic)
+	chain = app.appendSessionHandlers(chain)
 
 	// return mux
 	return chain.Then(mux)
 	// return app.recoverPanic(logRequest(secureHeaders(mux)))
+}
+
+func (app *Application) appendSessionHandlers(chain alice.Chain) alice.Chain {
+	// chain = chain.Append(midOne)
+	chain = chain.Append(app.sessionManager.LoadAndSave)
+	return chain
 }

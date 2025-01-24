@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"personalBlog/internal/loggers"
 	"personalBlog/internal/models"
@@ -19,7 +20,7 @@ type CommandLineFlags struct {
 }
 
 type Application struct {
-	flags                *CommandLineFlags
+	flags                CommandLineFlags
 	postModel            *models.PostModel
 	parsedTemplatesCache map[string]*template.Template
 	sessionManager       *scs.SessionManager
@@ -32,6 +33,9 @@ var (
 )
 
 func main() {
+	commandLineFlags := getCommandLineFlags()
+	fmt.Println(commandLineFlags)
+
 	// Open database connection
 	dbPool, err := openDB("postgres://rinzler@/personalBlog")
 	if err != nil {
@@ -45,27 +49,27 @@ func main() {
 		logErr.Fatal(err)
 	}
 
+	// Create session manager
 	sessionManager := scs.New()
 	sessionManager.Store = pgxstore.New(dbPool)
 	sessionManager.Lifetime = 1 * time.Minute
 
+	// Create app data
 	app := &Application{
-		flags:                &CommandLineFlags{},
+		flags:                commandLineFlags,
 		postModel:            &models.PostModel{DBPool: dbPool},
 		parsedTemplatesCache: templates,
 		sessionManager:       sessionManager,
 	}
 
-	app.flags.getCommandLineFlags()
-
+	// Create server
 	server := &http.Server{
 		Addr:    app.flags.addr,
 		Handler: app.routes(),
 	}
 
-	// -------------------------------------------------------------------------------------
-	// -------------------------------------------------------------------------------------
 	logInfo.Printf("Starting server on %s", app.flags.addr)
+	// Run server
 	logErr.Fatal(server.ListenAndServe())
 }
 

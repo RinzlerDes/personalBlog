@@ -23,6 +23,8 @@ func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	app.sessionManager.Put(r.Context(), "testtt", "testtttttttttttttttt response")
+
 	ptd := app.newPostTemplateData()
 	ptd.Posts = posts
 	app.renderPage(w, "home.html", &ptd)
@@ -60,20 +62,25 @@ func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	logInfo.Println("post found")
 
+	// testStr := app.sessionManager.PopString(r.Context(), "testtt")
+	// logInfo.Printf("Popped string from session: %v\n", testStr)
+
 	postTemplateData := app.newPostTemplateData()
 	postTemplateData.Post = post
+	postTemplateData.InitialInsertionMessage =
+		app.sessionManager.PopString(r.Context(), "testtt")
 
 	app.renderPage(w, "view.html", &postTemplateData)
 }
 
 func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
-	logInfo.Println("searchHandler")
+	logInfo.Println("Get Search Handler")
 	postTemplateData := app.newPostTemplateData()
 	app.renderPage(w, "postSearch.html", &postTemplateData)
 }
 
 func (app *Application) searchHandlerProcessForm(w http.ResponseWriter, r *http.Request) {
-	logInfo.Println("Search Page")
+	logInfo.Println("Post Search Handler")
 	ptd := app.newPostTemplateData()
 
 	// Limit amount of bytes able to be sent from a form
@@ -119,10 +126,9 @@ func (app *Application) searchHandlerProcessForm(w http.ResponseWriter, r *http.
 	}
 	logInfo.Printf("got post %d from db\n", targetPostID)
 
-	app.renderPage(w, "view.html", &ptd)
-
-	// Either first render or error finding post or user input
-	// app.renderPage(w, "postSearch.html", &ptd)
+	// app.renderPage(w, "view.html", &ptd)
+	url := fmt.Sprintf("/posts/view/%d", ptd.Post.ID)
+	http.Redirect(w, r, url, http.StatusSeeOther)
 }
 
 func (app *Application) insertHandler(w http.ResponseWriter, r *http.Request) {
