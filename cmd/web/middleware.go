@@ -55,3 +55,10 @@ func midTwo(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func midThree(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Middleware Three ***********************************")
+		next.ServeHTTP(w, r)
+	})
+}

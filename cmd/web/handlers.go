@@ -23,8 +23,6 @@ func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.sessionManager.Put(r.Context(), "testtt", "testtttttttttttttttt response")
-
 	ptd := app.newPostTemplateData()
 	ptd.Posts = posts
 	app.renderPage(w, "home.html", &ptd)
@@ -62,13 +60,12 @@ func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	logInfo.Println("post found")
 
-	// testStr := app.sessionManager.PopString(r.Context(), "testtt")
-	// logInfo.Printf("Popped string from session: %v\n", testStr)
+	sessionStr := app.sessionManager.PopString(r.Context(), "successfulInsert")
+	logInfo.Printf("Popped string from session: %v\n", sessionStr)
 
 	postTemplateData := app.newPostTemplateData()
 	postTemplateData.Post = post
-	postTemplateData.InitialInsertionMessage =
-		app.sessionManager.PopString(r.Context(), "testtt")
+	postTemplateData.InitialInsertionMessage = sessionStr
 
 	app.renderPage(w, "view.html", &postTemplateData)
 }
@@ -79,7 +76,7 @@ func (app *Application) searchHandler(w http.ResponseWriter, r *http.Request) {
 	app.renderPage(w, "postSearch.html", &postTemplateData)
 }
 
-func (app *Application) searchHandlerProcessForm(w http.ResponseWriter, r *http.Request) {
+func (app *Application) searchHandlerPost(w http.ResponseWriter, r *http.Request) {
 	logInfo.Println("Post Search Handler")
 	ptd := app.newPostTemplateData()
 
@@ -171,6 +168,8 @@ func (app *Application) insertHandlerPost(w http.ResponseWriter, r *http.Request
 	logInfo.Println("post inserted")
 
 	ptd.PostInserted = true
+
+	app.sessionManager.Put(r.Context(), "successfulInsert", "Post Inserted Successfully")
 
 	// Redirect to new post
 	url := fmt.Sprintf("/posts/view/%d", id)
