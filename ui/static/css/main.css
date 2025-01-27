@@ -368,3 +368,7 @@ footer {
     background-image: none;
     padding-left: 0px;
 }
+
+.content {
+    white-space: pre-wrap;
+}

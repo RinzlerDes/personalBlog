@@ -71,7 +71,7 @@ func main() {
 	logInfo.Printf("Starting server on %s", app.flags.addr)
 	// Run server
 	// logErr.Fatal(server.ListenAndServe())
-	logErr.Fatal(server.ListenAndServeTLS("", ""))
+	logErr.Fatal(server.ListenAndServeTLS("./transportLayerSecurity/cert.pem", "./transportLayerSecurity/key.pem"))
 }
 
 func openDB(dsn string) (*pgxpool.Pool, error) {

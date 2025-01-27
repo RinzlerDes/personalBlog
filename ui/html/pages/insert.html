@@ -13,8 +13,7 @@
         {{with .FormErrors.Errors.content}}
         <label class="error">{{.}}</label>
         {{end}}
-        <!-- <input type="text" name="content" value="{{.Post.Content}}" placeholder="Is the best soccer team on the planet."> -->
-        <textarea name="content" value="{{.Post.Content}}" placeholder="Is the best soccer team on the planet."></textarea>
+        <textarea name="content" placeholder="Is the best soccer team on the planet.">{{.Post.Content}}</textarea>
 
         <button type="submit">Submit Post</button>
         {{if .InsertionErrorMessage}}{{.InsertionErrorMessage}}{{end}}

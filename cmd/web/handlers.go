@@ -59,6 +59,7 @@ func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logInfo.Println("post found")
+	logInfo.Println(post)
 
 	sessionStr := app.sessionManager.PopString(r.Context(), "successfulInsert")
 	logInfo.Printf("Popped string from session: %v\n", sessionStr)
@@ -153,6 +154,7 @@ func (app *Application) insertHandlerPost(w http.ResponseWriter, r *http.Request
 	formErrors.RunChecksForContent(ptd.Post.Content, "content")
 
 	if formErrors.NotValid() {
+		logInfo.Println("form not valid")
 		app.renderPage(w, "insert.html", &ptd)
 		return
 	}
