@@ -70,7 +70,8 @@ func main() {
 
 	logInfo.Printf("Starting server on %s", app.flags.addr)
 	// Run server
-	logErr.Fatal(server.ListenAndServe())
+	// logErr.Fatal(server.ListenAndServe())
+	logErr.Fatal(server.ListenAndServeTLS("", ""))
 }
 
 func openDB(dsn string) (*pgxpool.Pool, error) {
@@ -88,7 +89,7 @@ func openDB(dsn string) (*pgxpool.Pool, error) {
 	return dbPool, nil
 }
 
-func (app *Application) restInsert(newPost *models.Post) {
+func (app *Application) testInsert(newPost *models.Post) {
 	_, err := app.postModel.Insert(newPost)
 	if err != nil {
 		logErr.Println(err)
