@@ -3,22 +3,40 @@
 {{define "main"}}
 <h1>The latest posts</h1>
 
-{{range .Posts}}
-<div class="snippet">
-    <div class="metadata">
-        <!-- <h1 style="color: red">{{.Title}}</h1> -->
-        <h1>{{.Title}}</h1>
-        <span>Post ID: {{.ID}}</span>
-    </div>
+<div class="latest">
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>ID</th>
+                <th>Created On</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Posts}}
+            <tr>
 
-    <div class="content">
-        <p>{{if .Content}} {{.Content}} {{else}}No content{{end}}</p>
-    </div>
+                <!-- <div class="snippet">
+                    <div class="metadata"> -->
+                <!-- <h1 style="color: red">{{.Title}}</h1> -->
+                <td><a href="/posts/view/{{.ID}}">{{.Title}}</a></td>
+                <!-- <h1>{{.Title}}</h1> -->
+                <td>{{.ID}}</td>
+                <td>{{.Created}}</td>
+                <!-- </div> -->
 
-    <div class="metadata">
-        <p>Created on: {{.Created}}</p>
-    </div>
+                <!-- <div class="content">
+                    <p>{{if .Content}} {{.Content}} {{else}}No content{{end}}</p>
+                </div> -->
+
+                <!-- <div class="metadata">
+                    <p>Created on: {{.Created}}</p>
+                </div> -->
+                <!-- </div> -->
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
 </div>
-{{end}}
 
 {{end}}

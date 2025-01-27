@@ -7,13 +7,14 @@
         {{with .FormErrors.Errors.title}}
         <label class="error">{{.}}</label>
         {{end}}
-        <input type="text" name="title" value="{{.Post.Title}}" placeholder="placeholder">
+        <input type="text" name="title" value="{{.Post.Title}}" placeholder="Chelsea FC">
 
         <label for="content">Content</label>
         {{with .FormErrors.Errors.content}}
         <label class="error">{{.}}</label>
         {{end}}
-        <input type="text" name="content" value="{{.Post.Content}}" placeholder="placeholder">
+        <!-- <input type="text" name="content" value="{{.Post.Content}}" placeholder="Is the best soccer team on the planet."> -->
+        <textarea name="content" value="{{.Post.Content}}" placeholder="Is the best soccer team on the planet."></textarea>
 
         <button type="submit">Submit Post</button>
         {{if .InsertionErrorMessage}}{{.InsertionErrorMessage}}{{end}}
