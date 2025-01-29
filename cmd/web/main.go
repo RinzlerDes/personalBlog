@@ -37,7 +37,7 @@ func main() {
 	fmt.Println(commandLineFlags)
 
 	// Open database connection
-	dbPool, err := openDB("postgres://rinzler@/personalBlog")
+	dbPool, err := openDBPool("postgres://rinzler@/personalBlog")
 	if err != nil {
 		logErr.Fatalf("Unable to connect to database: %v\n", err)
 	}
@@ -53,6 +53,7 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Store = pgxstore.New(dbPool)
 	sessionManager.Lifetime = 1 * time.Minute
+	sessionManager.Cookie.Secure = true
 
 	// Create app data
 	app := &Application{
@@ -74,7 +75,7 @@ func main() {
 	logErr.Fatal(server.ListenAndServeTLS("./transportLayerSecurity/cert.pem", "./transportLayerSecurity/key.pem"))
 }
 
-func openDB(dsn string) (*pgxpool.Pool, error) {
+func openDBPool(dsn string) (*pgxpool.Pool, error) {
 	// db, err := pgx.Connect(context.Background(), dsn)
 	dbPool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
