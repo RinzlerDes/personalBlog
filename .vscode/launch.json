@@ -9,6 +9,7 @@
             "name": "Launch Package",
             "type": "go",
             "request": "launch",
+            eahrtseah
             "mode": "auto",
             // "program": "${fileDirname}"
             "program": "./cmd/web/",
