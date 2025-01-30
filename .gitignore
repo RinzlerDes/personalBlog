@@ -1,2 +1,3 @@
 transportLayerSecurity/*.pem
 /notes.txt
+.vscode
