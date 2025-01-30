@@ -3,5 +3,3 @@ Protocol version:	"TLSv1.3"
 Cipher suite:	"TLS_AES_128_GCM_SHA256"
 Key Exchange Group:	"x25519"
 Signature Scheme:	"RSA-PSS-SHA256"
-eahrta
-eahrtseah
