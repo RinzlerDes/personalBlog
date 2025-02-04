@@ -28,21 +28,27 @@ var (
 )
 
 func (post *Post) String() string {
-	return fmt.Sprintf(
-		`Id         %d
-        Title       %s
-        Content     %s
-        Created     %v`,
+	return fmt.Sprintf(`
+Id         	%d
+Title       %s
+Content     %s
+Created     %v`,
 		post.ID, post.Title, post.Content, post.Created,
 	)
 }
 
 func (postModel *PostModel) Insert(post *Post) (uint, error) {
-	SQLStatement := `INSERT INTO posts (title, content, created) VALUES($1, $2, current_timestamp) RETURNING id, created`
+	SQLStatement := `INSERT INTO posts (title, content, created) 
+	VALUES($1, $2, current_timestamp) 
+	RETURNING id, created`
 
 	var id uint
 	var created time.Time
-	err := postModel.DBPool.QueryRow(context.Background(), SQLStatement, post.Title, post.Content).Scan(&id, &created)
+	err := postModel.DBPool.QueryRow(
+		context.Background(),
+		SQLStatement,
+		post.Title,
+		post.Content).Scan(&id, &created)
 	if err != nil {
 		return 0, err
 	}
