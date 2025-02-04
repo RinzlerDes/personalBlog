@@ -27,7 +27,7 @@ func getCommandLineFlags() CommandLineFlags {
 	return flags
 }
 
-func (app *Application) renderPage(w http.ResponseWriter, templateName string, ptd *models.PostTemplateData) {
+func (app *Application) renderPage(w http.ResponseWriter, templateName string, ptd models.TemplateData) {
 	template, exists := app.parsedTemplatesCache[templateName]
 	if !exists {
 		app.serverError(w, fmt.Errorf("the page for %s does not exist", templateName))
