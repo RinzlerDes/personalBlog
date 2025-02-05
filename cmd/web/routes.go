@@ -17,6 +17,9 @@ func (app *Application) routes() http.Handler {
 	mux.HandleFunc("POST /posts/search", app.searchHandlerPost)
 	mux.HandleFunc("GET /posts/insert", app.insertHandler)
 	mux.HandleFunc("POST /posts/insert", app.insertHandlerPost)
+	mux.HandleFunc("GET /users/view/{id}", app.usersViewHandler)
+	mux.HandleFunc("GET /users/signUp", app.userSignUpHandler)
+	mux.HandleFunc("POST /users/signUp", app.userSignUpHandlerPost)
 	// mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
 	// Does the same thing
 	mux.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
