@@ -15,6 +15,9 @@ type PostTemplateData struct {
 	InitialInsertionMessage string
 }
 
+// Marker function for TemplateData interface
+func (ptd *PostTemplateData) isTemplateData() {}
+
 func NewPostTemplateData() PostTemplateData {
 	return PostTemplateData{
 		CurrentYear:      time.Now().Year(),
