@@ -22,6 +22,7 @@ type CommandLineFlags struct {
 type Application struct {
 	flags                CommandLineFlags
 	postModel            *models.PostModel
+	userModel            *models.UserModel
 	parsedTemplatesCache map[string]*template.Template
 	sessionManager       *scs.SessionManager
 }
@@ -59,6 +60,7 @@ func main() {
 	app := &Application{
 		flags:                commandLineFlags,
 		postModel:            &models.PostModel{DBPool: dbPool},
+		userModel:            &models.UserModel{DBPool: dbPool},
 		parsedTemplatesCache: templates,
 		sessionManager:       sessionManager,
 	}
@@ -88,13 +90,4 @@ func openDBPool(dsn string) (*pgxpool.Pool, error) {
 	}
 
 	return dbPool, nil
-}
-
-func (app *Application) testInsert(newPost *models.Post) {
-	_, err := app.postModel.Insert(newPost)
-	if err != nil {
-		logErr.Println(err)
-		return
-	}
-	logInfo.Printf("new post\nID        %d\nTitle       %s\nContent     %s\nCreated     %v", newPost.ID, newPost.Title, newPost.Content, newPost.Created)
 }
