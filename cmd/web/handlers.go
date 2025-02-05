@@ -59,7 +59,7 @@ func (app *Application) viewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logInfo.Println("post found")
-	logInfo.Println(post)
+	logInfo.Println(post.String())
 
 	sessionStr := app.sessionManager.PopString(r.Context(), "successfulInsert")
 	logInfo.Printf("Popped string from session: %v\n", sessionStr)
@@ -188,4 +188,59 @@ func (app *Application) fileServerHandler(w http.ResponseWriter, r *http.Request
 
 	// Serve the file using the adjusted request
 	h.ServeHTTP(w, r)
+}
+
+func (app *Application) userSignUpHandler(w http.ResponseWriter, r *http.Request) {
+	logInfo.Println("userSignUpHandler GET")
+	ptd := models.NewPostTemplateData()
+	app.renderPage(w, "userSignUp.html", &ptd)
+}
+
+func (app *Application) userSignUpHandlerPost(w http.ResponseWriter, r *http.Request) {
+	logInfo.Println("userSignUpHandler POST")
+
+	err := r.ParseForm()
+	if err != nil {
+		logErr.Println(err)
+		return
+	}
+
+	user := models.User{}
+	utd := models.NewUserTemplateData()
+
+	user.Name = r.Form.Get("userName")
+	user.Email = r.Form.Get("email")
+	user.Password = r.Form.Get("password")
+
+	utd.FormErrors.NotBlank(user.Name, "userName")
+	utd.FormErrors.NotBlank(user.Email, "email")
+	utd.FormErrors.NotBlank(user.Password, "password")
+
+	if utd.FormErrors.NotValid() {
+		logErr.Println("form not valid")
+		app.renderPage(w, "userSignUp.html", &utd)
+	}
+
+}
+
+func (app *Application) usersViewHandler(w http.ResponseWriter, r *http.Request) {
+	logInfo.Println("usersViewHandler")
+
+	id := r.PathValue("id")
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		logErr.Println(err)
+		return
+	}
+
+	user, err := app.userModel.Get(uint(idInt))
+	if err != nil {
+		logErr.Println(err)
+		return
+	}
+
+	utd := models.NewUserTemplateData()
+	utd.User = user
+
+	app.renderPage(w, "userView.html", &utd)
 }
