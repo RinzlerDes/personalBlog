@@ -2,17 +2,17 @@ package models
 
 import "time"
 
-type userTemplateData struct {
+type UserTemplateData struct {
 	User        User
 	Users       []*User
 	FormErrors  FormErrors
 	CurrentYear int
 }
 
-func (utd *userTemplateData) isTemplateData() {}
+func (utd *UserTemplateData) isTemplateData() {}
 
-func NewUserTemplateData() userTemplateData {
-	return userTemplateData{
+func NewUserTemplateData() UserTemplateData {
+	return UserTemplateData{
 		FormErrors:  FormErrors{},
 		CurrentYear: time.Now().Year(),
 	}
