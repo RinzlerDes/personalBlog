@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -31,7 +33,7 @@ Created		%v`,
 	)
 }
 
-func (userModel *UserModel) Insert(user User) (uint, time.Time, error) {
+func (userModel *UserModel) Insert(user User) (uint, time.Time, UserFormErrors) {
 	SQLStatement := `insert into users (name, email, password, created) 
 	values($1, $2, $3, current_timestamp)
 	returning id, created`
@@ -48,11 +50,35 @@ func (userModel *UserModel) Insert(user User) (uint, time.Time, error) {
 
 	err := row.Scan(&id, &created)
 	if err != nil {
-		logErr.Println("error scanning")
-		return 0, time.Time{}, err
+		logErr.Println("error scanning", err)
+		logInfo.Printf("%T\n", err)
+
+		switch t := err.(type) {
+		case *pgconn.PgError:
+			logInfo.Printf("%s\n%s\n%s\n%s\n",
+				t.Detail,
+				t.ColumnName,
+				t.ConstraintName,
+				t.Where)
+
+			if t.Code == pgerrcode.UniqueViolation {
+				if t.ConstraintName == Users_email_key {
+					return 0, time.Time{}, UserFormErrors{
+						Field: "email",
+						Err:   fmt.Errorf("your email is not unique"),
+					}
+				}
+			}
+
+		default:
+			return 0, time.Time{}, UserFormErrors{
+				Field: "other",
+				Err:   err,
+			}
+		}
 	}
 
-	return id, created, nil
+	return id, created, UserFormErrors{}
 }
 
 func (userModel *UserModel) Get(id uint) (User, error) {
