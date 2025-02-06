@@ -10,6 +10,11 @@ type FormErrors struct {
 	Errors map[string]string
 }
 
+type UserFormErrors struct {
+	Field string
+	Err   error
+}
+
 func (fe *FormErrors) RunChecksForId(text string, key string) {
 	ok := fe.NotBlank(text, key)
 	if !ok {
