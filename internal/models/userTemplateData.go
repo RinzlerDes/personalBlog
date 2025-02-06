@@ -9,11 +9,12 @@ type UserTemplateData struct {
 	CurrentYear int
 }
 
+// Marker func for TemplateData interface
 func (utd *UserTemplateData) isTemplateData() {}
 
 func NewUserTemplateData() UserTemplateData {
 	return UserTemplateData{
-		FormErrors:  FormErrors{},
+		FormErrors:  FormErrors{Errors: make(map[string]string)},
 		CurrentYear: time.Now().Year(),
 	}
 }
