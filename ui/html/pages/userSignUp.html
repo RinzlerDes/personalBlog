@@ -2,13 +2,30 @@
 
 {{define "main"}}
 <h1>User Sign Up Here</h1>
-<form name="userSignUp" method="POST"> 
+<form name="userSignUp" method="POST">
+    {{with .FormErrors.Errors.other}}
+    <label class="error">{{.}}</label>
+    {{end}}
+
     <label for="userName">User Name</label>
-    <input type="text" name="userName">
+    {{with .FormErrors.Errors.userName}}
+    <label class="error">{{.}}</label>
+    {{end}}
+    <input type="text" name="userName" value="{{.User.Name}}">
+
+
     <label for="emai">Email</label>
-    <input type="text" name="email">
+    {{with .FormErrors.Errors.email}}
+    <label class="error">{{.}}</label>
+    {{end}}
+    <input type="text" name="email" value="{{.User.Email}}">
+
     <label for="password">Password</label>
-    <input type="text" name="password">
+    {{with .FormErrors.Errors.password}}
+    <label class="error">{{.}}</label>
+    {{end}}
+    <input type="text" name="password" value="{{.User.Password}}">
+
     <button type="submit">Create User</button>
 </form>
 {{end}}
