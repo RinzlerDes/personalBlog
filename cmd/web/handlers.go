@@ -192,8 +192,8 @@ func (app *Application) fileServerHandler(w http.ResponseWriter, r *http.Request
 
 func (app *Application) userSignUpHandler(w http.ResponseWriter, r *http.Request) {
 	logInfo.Println("userSignUpHandler GET")
-	ptd := models.NewPostTemplateData()
-	app.renderPage(w, "userSignUp.html", &ptd)
+	utd := models.NewUserTemplateData()
+	app.renderPage(w, "userSignUp.html", &utd)
 }
 
 func (app *Application) userSignUpHandlerPost(w http.ResponseWriter, r *http.Request) {
@@ -205,12 +205,12 @@ func (app *Application) userSignUpHandlerPost(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	user := models.User{}
 	utd := models.NewUserTemplateData()
+	user := &utd.User
 
-	user.Name = r.Form.Get("userName")
-	user.Email = r.Form.Get("email")
-	user.Password = r.Form.Get("password")
+	user.Name = strings.TrimSpace(r.Form.Get("userName"))
+	user.Email = strings.TrimSpace(r.Form.Get("email"))
+	user.Password = strings.TrimSpace(r.Form.Get("password"))
 
 	utd.FormErrors.NotBlank(user.Name, "userName")
 	utd.FormErrors.NotBlank(user.Email, "email")
@@ -219,8 +219,21 @@ func (app *Application) userSignUpHandlerPost(w http.ResponseWriter, r *http.Req
 	if utd.FormErrors.NotValid() {
 		logErr.Println("form not valid")
 		app.renderPage(w, "userSignUp.html", &utd)
+		return
 	}
 
+	id, time, userFormErrors := app.userModel.Insert(*user)
+	user.ID = id
+	user.Created = time
+
+	if userFormErrors.Err != nil {
+		utd.FormErrors.AddError(userFormErrors.Field, userFormErrors.Err.Error())
+		app.renderPage(w, "userSignUp.html", &utd)
+		return
+	}
+
+	url := fmt.Sprintf("/users/view/%d", user.ID)
+	http.Redirect(w, r, url, http.StatusSeeOther)
 }
 
 func (app *Application) usersViewHandler(w http.ResponseWriter, r *http.Request) {
