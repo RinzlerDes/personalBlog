@@ -11,25 +11,27 @@ func (app *Application) routes() http.Handler {
 	mux := http.NewServeMux()
 	fileServer := http.FileServer(http.Dir(app.flags.fileServerAddr))
 
+	// Static file server
+	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
+	// Home
 	mux.HandleFunc("/", app.homeHandler)
+	// Post routes
 	mux.HandleFunc("GET /posts/view/{id}", app.viewHandler)
 	mux.HandleFunc("GET /posts/search", app.searchHandler)
 	mux.HandleFunc("POST /posts/search", app.searchHandlerPost)
 	mux.HandleFunc("GET /posts/insert", app.insertHandler)
 	mux.HandleFunc("POST /posts/insert", app.insertHandlerPost)
+	// User routes
 	mux.HandleFunc("GET /users/view/{id}", app.usersViewHandler)
 	mux.HandleFunc("GET /users/signUp", app.userSignUpHandler)
 	mux.HandleFunc("POST /users/signUp", app.userSignUpHandlerPost)
-	// mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
-	// Does the same thing
-	mux.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
-		app.fileServerHandler(w, r, fileServer)
-	})
 
 	// chain := alice.New(midThree, secureHeaders, logRequest, app.recoverPanic)
 	// chain = app.appendSessionHandlers(chain,
 	// 	app.sessionManager.LoadAndSave,
 	// )
+
+	// Create middleware chain
 	chain := alice.Chain{}
 	chain = app.appendSessionHandlers(chain,
 		app.sessionManager.LoadAndSave,
