@@ -42,23 +42,23 @@ func (app *Application) recoverPanic(next http.Handler) http.Handler {
 	})
 }
 
-func midOne(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Middleware One ***********************************")
-		next.ServeHTTP(w, r)
-	})
-}
+// func midOne(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		fmt.Println("Middleware One ***********************************")
+// 		next.ServeHTTP(w, r)
+// 	})
+// }
 
-func midTwo(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Middleware Two ***********************************")
-		next.ServeHTTP(w, r)
-	})
-}
+// func midTwo(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		fmt.Println("Middleware Two ***********************************")
+// 		next.ServeHTTP(w, r)
+// 	})
+// }
 
-func midThree(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Middleware Three ***********************************")
-		next.ServeHTTP(w, r)
-	})
-}
+// func midThree(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		fmt.Println("Middleware Three ***********************************")
+// 		next.ServeHTTP(w, r)
+// 	})
+// }

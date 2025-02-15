@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"personalBlog/internal/loggers"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/alexedwards/scs/pgxstore"
 	"github.com/alexedwards/scs/v2"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type CommandLineFlags struct {
@@ -75,19 +73,4 @@ func main() {
 	// Run server
 	// logErr.Fatal(server.ListenAndServe())
 	logErr.Fatal(server.ListenAndServeTLS("./transportLayerSecurity/cert.pem", "./transportLayerSecurity/key.pem"))
-}
-
-func openDBPool(dsn string) (*pgxpool.Pool, error) {
-	// db, err := pgx.Connect(context.Background(), dsn)
-	dbPool, err := pgxpool.New(context.Background(), dsn)
-	if err != nil {
-		return nil, err
-	}
-
-	err = dbPool.Ping(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	return dbPool, nil
 }

@@ -2,12 +2,30 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
 	"personalBlog/internal/models"
 	"runtime/debug"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+func openDBPool(dsn string) (*pgxpool.Pool, error) {
+	// db, err := pgx.Connect(context.Background(), dsn)
+	dbPool, err := pgxpool.New(context.Background(), dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dbPool.Ping(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	return dbPool, nil
+}
 
 // func (app *Application) serverError(w http.ResponseWriter, err error) {
 func (app *Application) serverError(w http.ResponseWriter, err error) {
