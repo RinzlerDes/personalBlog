@@ -21,8 +21,8 @@
     <input type="text" name="email" value="{{.User.Email}}">
 
     <label for="password">Password</label>
-    {{with .FormErrors.Errors.password}}
-    <label class="error">{{.}}</label>
+    {{range $_, $element := .FormErrors.PasswordErrors}}
+    <label class="error">{{$element}}</label>
     {{end}}
     <input type="text" name="password">
 

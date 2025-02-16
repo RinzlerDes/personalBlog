@@ -7,7 +7,8 @@ import (
 )
 
 type FormErrors struct {
-	Errors map[string]string
+	Errors         map[string]string
+	PasswordErrors []error
 }
 
 type UserFormErrors struct {
@@ -29,21 +30,15 @@ func (fe *FormErrors) RunChecksForTitle(text string, key string) {
 		return
 	}
 
-	tooBig := fe.stringGT100(text, key)
-	if tooBig {
-		return
-	}
+	fe.stringGT100(text, key)
 }
 
 func (fe *FormErrors) RunChecksForContent(text string, key string) {
-	ok := fe.NotBlank(text, key)
-	if !ok {
-		return
-	}
+	fe.NotBlank(text, key)
 }
 
 func (fe *FormErrors) NotValid() bool {
-	return len(fe.Errors) > 0
+	return len(fe.Errors) > 0 || len(fe.PasswordErrors) > 0
 }
 
 func (fe *FormErrors) AddError(key string, errorMessage string) {
@@ -73,4 +68,21 @@ func (fe *FormErrors) stringGT100(str string, key string) bool {
 	}
 
 	return false
+}
+
+func (fe *FormErrors) ValidatePassword(pass string) {
+	if !fieldNotBlank(pass) {
+		fe.PasswordErrors = append(fe.PasswordErrors, ErrBlankField)
+	}
+	if !minChars(pass, 8) {
+		fe.PasswordErrors = append(fe.PasswordErrors, ErrPasswordLength)
+	}
+}
+
+func fieldNotBlank(str string) bool {
+	return strings.TrimSpace(str) != ""
+}
+
+func minChars(str string, length int) bool {
+	return len(str) >= length
 }

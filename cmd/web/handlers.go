@@ -212,9 +212,11 @@ func (app *Application) userSignUpHandlerPost(w http.ResponseWriter, r *http.Req
 	user.Email = strings.TrimSpace(r.Form.Get("email"))
 	user.Password = strings.TrimSpace(r.Form.Get("password"))
 
+	// Run form tests
 	utd.FormErrors.NotBlank(user.Name, "userName")
 	utd.FormErrors.NotBlank(user.Email, "email")
 	utd.FormErrors.NotBlank(user.Password, "password")
+	utd.FormErrors.ValidatePassword(user.Password)
 
 	if utd.FormErrors.NotValid() {
 		logErr.Println("form not valid")

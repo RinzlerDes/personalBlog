@@ -3,6 +3,8 @@ package models
 import "errors"
 
 var ErrNoRecord = errors.New("models: no matching record found")
+var ErrPasswordLength = errors.New("password does not meet length requirement")
+var ErrBlankField = errors.New("field is blank")
 
 type FormError int
 
