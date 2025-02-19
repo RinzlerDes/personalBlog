@@ -112,7 +112,7 @@ func (app *Application) searchHandlerPost(w http.ResponseWriter, r *http.Request
 		if errors.Is(err, models.ErrNoRecord) {
 			logErr.Println("post not found in searchHandler: ", err)
 			// ptd.PostNotFound = true
-			ptd.InsertionErrorMessage = models.FormErrorsState[models.PostNotFound]
+			ptd.InsertionErrorMessage = models.ErrNoRecord.Error()
 
 			app.renderPage(w, "postSearch.html", &ptd)
 			return
@@ -163,7 +163,8 @@ func (app *Application) insertHandlerPost(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		logErr.Println(err)
 		// ptd.PostInsertionError = true
-		ptd.InsertionErrorMessage = models.FormErrorsState[models.PostInsertionError]
+		ptd.InsertionErrorMessage = fmt.Sprintln("post was not inserted")
+
 		app.renderPage(w, "insert.html", &ptd)
 		return
 	}
@@ -214,9 +215,8 @@ func (app *Application) userSignUpHandlerPost(w http.ResponseWriter, r *http.Req
 
 	// Run form tests
 	utd.FormErrors.NotBlank(user.Name, "userName")
-	utd.FormErrors.NotBlank(user.Email, "email")
-	utd.FormErrors.NotBlank(user.Password, "password")
 	utd.FormErrors.ValidatePassword(user.Password)
+	utd.FormErrors.ValidateEmail(user.Email)
 
 	if utd.FormErrors.NotValid() {
 		logErr.Println("form not valid")
@@ -229,7 +229,7 @@ func (app *Application) userSignUpHandlerPost(w http.ResponseWriter, r *http.Req
 	user.Created = time
 
 	if userFormErrors.Err != nil {
-		utd.FormErrors.AddError(userFormErrors.Field, userFormErrors.Err.Error())
+		utd.FormErrors.AddError(userFormErrors.Field, userFormErrors.Err)
 		app.renderPage(w, "userSignUp.html", &utd)
 		return
 	}

@@ -14,7 +14,7 @@ func (utd *UserTemplateData) isTemplateData() {}
 
 func NewUserTemplateData() UserTemplateData {
 	return UserTemplateData{
-		FormErrors:  FormErrors{Errors: make(map[string]string)},
+		FormErrors:  FormErrors{Errors: make(map[string][]error)},
 		CurrentYear: time.Now().Year(),
 	}
 }

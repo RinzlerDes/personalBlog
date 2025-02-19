@@ -22,6 +22,6 @@ func NewPostTemplateData() PostTemplateData {
 	return PostTemplateData{
 		CurrentYear:      time.Now().Year(),
 		InsertionMessage: &insertionMessage,
-		FormErrors:       FormErrors{Errors: make(map[string]string)},
+		FormErrors:       FormErrors{Errors: make(map[string][]error)},
 	}
 }

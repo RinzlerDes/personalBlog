@@ -8,20 +8,20 @@
     {{end}}
 
     <label for="userName">User Name</label>
-    {{with .FormErrors.Errors.userName}}
-    <label class="error">{{.}}</label>
+    {{range $_, $element := .FormErrors.Errors.userName}}
+    <label class="error">{{$element}}</label>
     {{end}}
     <input type="text" name="userName" value="{{.User.Name}}">
 
 
     <label for="emai">Email</label>
-    {{with .FormErrors.Errors.email}}
-    <label class="error">{{.}}</label>
+    {{range $_, $element := .FormErrors.Errors.email}}
+    <label class="error">{{$element}}</label>
     {{end}}
     <input type="text" name="email" value="{{.User.Email}}">
 
     <label for="password">Password</label>
-    {{range $_, $element := .FormErrors.PasswordErrors}}
+    {{range $_, $element := .FormErrors.Errors.password}}
     <label class="error">{{$element}}</label>
     {{end}}
     <input type="text" name="password">
